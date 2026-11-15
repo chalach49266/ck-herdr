@@ -1,0 +1,62 @@
+{
+  "spaces": [
+    {
+      "id": "sp8941f8f616c00be13addb2347d92a0d4",
+      "name": "CK",
+      "folder": "/Users/ckasemtantikul/PhD_local/agent_runs",
+      "machine": null,
+      "active": true,
+      "tabs": [
+        {
+          "id": "tb04a60a647c708b65dc99e42b66f29149",
+          "name": "1",
+          "active": true,
+          "settled": false,
+          "terminals": [
+            {
+              "terminal": "t5",
+              "pane": "pe0b965536be419e0b7cfbdba23749109",
+              "status": null,
+              "app": null,
+              "name": null,
+              "sub_agents": []
+            }
+          ]
+        },
+        {
+          "id": "tbf5c9e26cbdda6e5bc650762748ce9aa1",
+          "name": "2",
+          "active": false,
+          "settled": false,
+          "terminals": [
+            {
+              "terminal": "t1",
+              "pane": "pe569bd24a8626d18de69088c352c2a1c",
+              "status": "idle",
+              "app": "claude-code",
+              "name": "a1114-7-smoke-sonnet",
+              "sub_agents": []
+            }
+          ]
+        },
+        {
+          "id": "tb37b100c260640b2779d744be22aa39ee",
+          "name": "3",
+          "active": false,
+          "settled": false,
+          "terminals": [
+            {
+              "terminal": "t4",
+              "pane": "p2d4600e2b1512278588d861259dd8a10",
+              "status": "idle",
+              "app": "codex",
+              "name": "a1114-7-smoke-sol-fast2",
+              "sub_agents": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "recent": []
+}

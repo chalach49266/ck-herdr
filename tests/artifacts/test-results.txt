@@ -1,8 +1,15 @@
+PASS stub space found
+PASS stub space created
+PASS stub space no-window
+PASS stub space missing
+PASS stub space custom
+PASS stub dry-run previews space lookup/create/label with no calls or writes
 PASS real sol alias dry-run (both flag positions), no output file created
 PASS unsafe flag removal, interactive-only guard, done/blocked/partial/error/exit/timeout mappings
-/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-23010/runs/ck-test-23010.out
+ck-herdr: warning: Herdr window unavailable; launching without a space label
+/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-29408/runs/ck-test-29408.out
 PASS real hc OSC working-to-done, labels, listing, persistent terminal, .out final exit=0
 PASS reused slug refuses to overwrite output
 PASS test terminal killed/removed and private core stopped
-EVIDENCE /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-23010
+EVIDENCE /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-29408
 ALL CHECKS PASSED (fake_or_tests; no real model launched)

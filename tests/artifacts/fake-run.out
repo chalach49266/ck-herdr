@@ -1,11 +1,13 @@
-ck-herdr: slug=ck-test-23010 model=fake ask=A-test
-$ /Users/ckasemtantikul/.local/bin/hc run --json --bg --outlive-parent --name ck-test-23010 --cwd /Users/ckasemtantikul/PhD_local/ck-herdr --label ck-herdr=true -- /opt/anaconda3/bin/python3 /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-23010/fake-agent.py 'Task: read the prompt file "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-23010/runs/ck-test-23010_prompt.md" and follow its task, scope, and output contract. Title: OSC fake agent. Do not start additional agents.'
-{"address":"t1","agent":"python3","cwd":"/Users/ckasemtantikul/PhD_local/ck-herdr","name":"ck-test-23010","state":"live","turn":0}
-$ /Users/ckasemtantikul/.local/bin/hc label --json ck-test-23010 ask=A-test model=fake
-{"address":"t1","argv":["/opt/anaconda3/bin/python3","/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-23010/fake-agent.py","Task: read the prompt file \"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-23010/runs/ck-test-23010_prompt.md\" and follow its task, scope, and output contract. Title: OSC fake agent. Do not start additional agents."],"cols":200,"created_ms":1794714265316,"cwd":"/Users/ckasemtantikul/PhD_local/ck-herdr","die_with_parent":false,"exit_code":null,"finished_ms":null,"identity":"ghostty","keep":false,"labels":{"ask":"A-test","ck-herdr":"true","model":"fake"},"name":"ck-test-23010","notify":true,"parent":null,"pid":23045,"reason":null,"reported":false,"rm":false,"rows":120,"screen":"exact","signal":null,"state":"live","status":null,"status_ms":null,"template":null,"title":"","turn":0}
-$ /Users/ckasemtantikul/.local/bin/hc wait --json ck-test-23010
+ck-herdr: slug=ck-test-29408 model=fake ask=A-test
+$ /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/no-app-for-private-core ls
+ck-herdr: warning: Herdr window unavailable; launching without a space label
+$ /Users/ckasemtantikul/.local/bin/hc run --json --bg --outlive-parent --name ck-test-29408 --cwd /Users/ckasemtantikul/PhD_local/ck-herdr --label ck-herdr=true -- /opt/anaconda3/bin/python3 /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-29408/fake-agent.py 'Task: read the prompt file "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-29408/runs/ck-test-29408_prompt.md" and follow its task, scope, and output contract. Title: OSC fake agent. Do not start additional agents.'
+{"address":"t1","agent":"python3","cwd":"/Users/ckasemtantikul/PhD_local/ck-herdr","name":"ck-test-29408","state":"live","turn":0}
+$ /Users/ckasemtantikul/.local/bin/hc label --json ck-test-29408 ask=A-test model=fake
+{"address":"t1","argv":["/opt/anaconda3/bin/python3","/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-29408/fake-agent.py","Task: read the prompt file \"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-29408/runs/ck-test-29408_prompt.md\" and follow its task, scope, and output contract. Title: OSC fake agent. Do not start additional agents."],"cols":200,"created_ms":1794717215103,"cwd":"/Users/ckasemtantikul/PhD_local/ck-herdr","die_with_parent":false,"exit_code":null,"finished_ms":null,"identity":"ghostty","keep":false,"labels":{"ask":"A-test","ck-herdr":"true","model":"fake"},"name":"ck-test-29408","notify":true,"parent":null,"pid":29483,"reason":null,"reported":false,"rm":false,"rows":120,"screen":"exact","signal":null,"state":"live","status":null,"status_ms":null,"template":null,"title":"","turn":0}
+$ /Users/ckasemtantikul/.local/bin/hc wait --json ck-test-29408
 {"children":[],"ended":true,"exit_code":null,"reason":"status","signal":null,"status":"done","terminal":"t1","turn":1}
 fake work
 fake done
-ck-run: status=done slug=ck-test-23010 (Herdr terminal retained; attach with hc attach ck-test-23010)
+ck-run: status=done slug=ck-test-29408 (Herdr terminal retained; attach with hc attach ck-test-29408)
 ck-run exit=0

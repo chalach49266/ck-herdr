@@ -93,6 +93,34 @@ def hc_path():
     return os.environ.get("CK_HERDR_HC") or shutil.which("hc") or str(Path.home() / ".local/bin/hc")
 
 
+def app_path():
+    return os.environ.get("CK_HERDR_APP") or shutil.which("herdr-app") or str(Path.home() / ".local/bin/herdr-app")
+
+
+def space_label(name, log):
+    """Opt into the running window; window failures must not block agents."""
+    app = app_path()
+
+    def lookup():
+        spaces = invoke([app, "ls"], log)["spaces"]
+        return next((s["id"] for s in spaces if s.get("name") == name), None)
+
+    try:
+        space = lookup()
+        if not space:
+            invoke([app, "do", "space.new", "--name", name,
+                    "--folder", str(ROOT / "agent_runs")], log)
+            space = lookup()
+        if not isinstance(space, str) or not space:
+            raise ValueError("space has no ID")
+        return ["--label", f"herdr.space={space}"]
+    except (OSError, ValueError, KeyError, TypeError, subprocess.TimeoutExpired):
+        warning = "ck-herdr: warning: Herdr window unavailable; launching without a space label"
+        print(warning, file=sys.stderr)
+        log.write(warning + "\n")
+        return []
+
+
 def invoke(argv, log=None, timeout=30):
     if log:
         log.write("$ " + shlex.join(argv) + "\n")
@@ -138,7 +166,8 @@ def launch(args):
     task += " Do not start additional agents."
     hc = hc_path()
     run_cmd = [hc, "run", "--json", "--bg", "--outlive-parent", "--name", args.slug,
-               "--cwd", str(cwd), "--label", "ck-herdr=true", "--", *cmd, task]
+               "--cwd", str(cwd), "--label", "ck-herdr=true"]
+    agent_args = ["--", *cmd, task]
     labels = [hc, "label", "--json", args.slug, f"ask={args.ask or ''}", f"model={args.model}"]
     wait_cmd = [hc, "wait", "--json", args.slug]
     read_cmd = [hc, "read", "--lines", "100", args.slug]
@@ -146,7 +175,12 @@ def launch(args):
         print(f"ck-herdr: dropped unsafe v1 flag: {flag}", file=sys.stderr)
     if args.dry_run:
         print("dry run: nothing written or started")
-        for line in (run_cmd, labels, wait_cmd, read_cmd):
+        print("space lookup: " + shlex.join([app_path(), "ls"]) + f" (name={args.space!r})")
+        print("if missing: " + shlex.join([app_path(), "do", "space.new", "--name", args.space,
+                                            "--folder", str(ROOT / "agent_runs")]))
+        print("if the window is unavailable: launch without the space label and warn")
+        planned_run = run_cmd + ["--label", "herdr.space=<resolved-space-id>"] + agent_args
+        for line in (planned_run, labels, wait_cmd, read_cmd):
             print(shlex.join(line))
         print(f"out: {out} (final line: ck-run exit=<N>)")
         return 0
@@ -159,7 +193,7 @@ def launch(args):
         for flag in dropped:
             log.write(f"ck-herdr: dropped unsafe v1 flag: {flag}\n")
         try:
-            started = invoke(run_cmd, log)
+            started = invoke(run_cmd + space_label(args.space, log) + agent_args, log)
             first = started.get("first_message") or {}
             if first.get("sent") is False:
                 raise ValueError(f"initial task was not sent: {first}")
@@ -215,6 +249,7 @@ def main():
     launch_parser.add_argument("--cwd", required=True)
     launch_parser.add_argument("--ask")
     launch_parser.add_argument("--title")
+    launch_parser.add_argument("--space", default="CK", help="Herdr space name (default: CK)")
     ls_parser = commands.add_parser("ls")
     for sub in (launch_parser, ls_parser):
         sub.add_argument("--dry-run", action="store_true", default=argparse.SUPPRESS)

@@ -21,7 +21,7 @@ flowchart LR
 
 | Existing concept | Herdr mapping here |
 | --- | --- |
-| ask | `ask` terminal label. A Herdr space could group an ask later; no space is created. |
+| ask | `ask` terminal label; launches appear in the CK space by default. |
 | run | A persistent terminal/tab named after the slug. |
 | model alias | Read from `~/PhD_local/ck-dispatch/config/models.json`; also a terminal label. |
 | stall | A reported `blocked` status returns a blocked result. There is no watchdog or screen-text inference. |
@@ -47,6 +47,8 @@ blocks in `hc wait <slug>`. Run it in a persistent supervising terminal when
 the completion watcher must survive closing the invoking shell. The agent
 terminal itself outlives the launcher. The title becomes part of the initial
 task; the tab name remains the slug.
+
+Launches look up the space named `CK` with `herdr-app ls` and create it in `~/PhD_local/agent_runs` when missing. Use `--space NAME` to choose another name. The resolved `herdr.space` label is passed in the initial `hc run`, so the window can show the agent as a tab. If the app or window is unavailable, the agent still launches with one warning. Dry-run only prints the planned lookup, conditional creation, and label; it makes no app or core calls.
 
 Dry-run works before or after the subcommand, including the requested form:
 

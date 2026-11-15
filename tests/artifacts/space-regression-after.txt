@@ -1,0 +1,6 @@
+PASS stub space found
+PASS stub space created
+PASS stub space no-window
+PASS stub space missing
+PASS stub space custom
+PASS stub dry-run previews space lookup/create/label with no calls or writes

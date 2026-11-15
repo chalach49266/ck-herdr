@@ -1,0 +1,140 @@
+[
+  {
+    "observation": "Short-lived fixture absent from CK snapshot",
+    "window": {
+      "spaces": [
+        {
+          "id": "sp8941f8f616c00be13addb2347d92a0d4",
+          "name": "CK",
+          "folder": "/Users/ckasemtantikul/PhD_local/agent_runs",
+          "machine": null,
+          "active": true,
+          "tabs": [
+            {
+              "id": "tb04a60a647c708b65dc99e42b66f29149",
+              "name": "1",
+              "active": true,
+              "settled": false,
+              "terminals": [
+                {
+                  "terminal": "t5",
+                  "pane": "pe0b965536be419e0b7cfbdba23749109",
+                  "status": null,
+                  "app": null,
+                  "name": null,
+                  "sub_agents": []
+                }
+              ]
+            },
+            {
+              "id": "tbf5c9e26cbdda6e5bc650762748ce9aa1",
+              "name": "2",
+              "active": false,
+              "settled": false,
+              "terminals": [
+                {
+                  "terminal": "t1",
+                  "pane": "pe569bd24a8626d18de69088c352c2a1c",
+                  "status": "idle",
+                  "app": "claude-code",
+                  "name": "a1114-7-smoke-sonnet",
+                  "sub_agents": []
+                }
+              ]
+            },
+            {
+              "id": "tb37b100c260640b2779d744be22aa39ee",
+              "name": "3",
+              "active": false,
+              "settled": false,
+              "terminals": [
+                {
+                  "terminal": "t4",
+                  "pane": "p2d4600e2b1512278588d861259dd8a10",
+                  "status": "idle",
+                  "app": "codex",
+                  "name": "a1114-7-smoke-sol-fast2",
+                  "sub_agents": []
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "recent": []
+    },
+    "run_log": "ck-herdr: slug=ck-space-fake-eb74 model=fake ask=\n$ /Users/ckasemtantikul/.local/bin/herdr-app ls\n{\n  \"spaces\": [\n    {\n      \"id\": \"sp8941f8f616c00be13addb2347d92a0d4\",\n      \"name\": \"CK\",\n      \"folder\": \"/Users/ckasemtantikul/PhD_local/agent_runs\",\n      \"machine\": null,\n      \"active\": true,\n      \"tabs\": [\n        {\n          \"id\": \"tb04a60a647c708b65dc99e42b66f29149\",\n          \"name\": \"1\",\n          \"active\": true,\n          \"settled\": false,\n          \"terminals\": [\n            {\n              \"terminal\": \"t5\",\n              \"pane\": \"pe0b965536be419e0b7cfbdba23749109\",\n              \"status\": null,\n              \"app\": null,\n              \"name\": null,\n              \"sub_agents\": []\n            }\n          ]\n        },\n        {\n          \"id\": \"tbf5c9e26cbdda6e5bc650762748ce9aa1\",\n          \"name\": \"2\",\n          \"active\": false,\n          \"settled\": false,\n          \"terminals\": [\n            {\n              \"terminal\": \"t1\",\n              \"pane\": \"pe569bd24a8626d18de69088c352c2a1c\",\n              \"status\": \"idle\",\n              \"app\": \"claude-code\",\n              \"name\": \"a1114-7-smoke-sonnet\",\n              \"sub_agents\": []\n            }\n          ]\n        },\n        {\n          \"id\": \"tb37b100c260640b2779d744be22aa39ee\",\n          \"name\": \"3\",\n          \"active\": false,\n          \"settled\": false,\n          \"terminals\": [\n            {\n              \"terminal\": \"t4\",\n              \"pane\": \"p2d4600e2b1512278588d861259dd8a10\",\n              \"status\": \"idle\",\n              \"app\": \"codex\",\n              \"name\": \"a1114-7-smoke-sol-fast2\",\n              \"sub_agents\": []\n            }\n          ]\n        }\n      ]\n    }\n  ],\n  \"recent\": []\n}\n$ /Users/ckasemtantikul/.local/bin/hc run --json --bg --outlive-parent --name ck-space-fake-eb74 --cwd /Users/ckasemtantikul/PhD_local/ck-herdr --label ck-herdr=true --label herdr.space=sp8941f8f616c00be13addb2347d92a0d4 -- /opt/anaconda3/bin/python3 /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-29408/fake-agent.py 'Task: read the prompt file \"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/live-space-eb74/ck-space-fake-eb74_prompt.md\" and follow its task, scope, and output contract. Title: Fake CK space check. Do not start additional agents.'\n{\"address\":\"t6\",\"agent\":\"python3\",\"cwd\":\"/Users/ckasemtantikul/PhD_local/ck-herdr\",\"name\":\"ck-space-fake-eb74\",\"state\":\"live\",\"turn\":0}\n$ /Users/ckasemtantikul/.local/bin/hc label --json ck-space-fake-eb74 ask= model=fake\n{\"address\":\"t6\",\"argv\":[\"/opt/anaconda3/bin/python3\",\"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-29408/fake-agent.py\",\"Task: read the prompt file \\\"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/live-space-eb74/ck-space-fake-eb74_prompt.md\\\" and follow its task, scope, and output contract. Title: Fake CK space check. Do not start additional agents.\"],\"cols\":200,\"created_ms\":1794717268302,\"cwd\":\"/Users/ckasemtantikul/PhD_local/ck-herdr\",\"die_with_parent\":false,\"exit_code\":null,\"finished_ms\":null,\"identity\":\"ghostty\",\"keep\":false,\"labels\":{\"ck-herdr\":\"true\",\"herdr.space\":\"sp8941f8f616c00be13addb2347d92a0d4\",\"model\":\"fake\"},\"name\":\"ck-space-fake-eb74\",\"notify\":true,\"parent\":null,\"pid\":29643,\"reason\":null,\"reported\":false,\"rm\":false,\"rows\":120,\"screen\":\"exact\",\"signal\":null,\"state\":\"live\",\"status\":null,\"status_ms\":null,\"template\":null,\"title\":\"\",\"turn\":0}\n$ /Users/ckasemtantikul/.local/bin/hc wait --json ck-space-fake-eb74\n{\"children\":[],\"ended\":true,\"exit_code\":null,\"reason\":\"status\",\"signal\":null,\"status\":\"done\",\"terminal\":\"t6\",\"turn\":1}\nfake work\nfake done\nck-run: status=done slug=ck-space-fake-eb74 (Herdr terminal retained; attach with hc attach ck-space-fake-eb74)\nck-run exit=0\n",
+    "cleanup": {
+      "removed": "t6"
+    }
+  },
+  {
+    "observation": "Short-lived fixture absent from CK snapshot",
+    "window": {
+      "spaces": [
+        {
+          "id": "sp8941f8f616c00be13addb2347d92a0d4",
+          "name": "CK",
+          "folder": "/Users/ckasemtantikul/PhD_local/agent_runs",
+          "machine": null,
+          "active": true,
+          "tabs": [
+            {
+              "id": "tb04a60a647c708b65dc99e42b66f29149",
+              "name": "1",
+              "active": true,
+              "settled": false,
+              "terminals": [
+                {
+                  "terminal": "t5",
+                  "pane": "pe0b965536be419e0b7cfbdba23749109",
+                  "status": null,
+                  "app": null,
+                  "name": null,
+                  "sub_agents": []
+                }
+              ]
+            },
+            {
+              "id": "tbf5c9e26cbdda6e5bc650762748ce9aa1",
+              "name": "2",
+              "active": false,
+              "settled": false,
+              "terminals": [
+                {
+                  "terminal": "t1",
+                  "pane": "pe569bd24a8626d18de69088c352c2a1c",
+                  "status": "idle",
+                  "app": "claude-code",
+                  "name": "a1114-7-smoke-sonnet",
+                  "sub_agents": []
+                }
+              ]
+            },
+            {
+              "id": "tb37b100c260640b2779d744be22aa39ee",
+              "name": "3",
+              "active": false,
+              "settled": false,
+              "terminals": [
+                {
+                  "terminal": "t4",
+                  "pane": "p2d4600e2b1512278588d861259dd8a10",
+                  "status": "idle",
+                  "app": "codex",
+                  "name": "a1114-7-smoke-sol-fast2",
+                  "sub_agents": []
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "recent": []
+    },
+    "run_log": "ck-herdr: slug=ck-space-fake-eb74b model=fake ask=\n$ /Users/ckasemtantikul/.local/bin/herdr-app ls\n{\n  \"spaces\": [\n    {\n      \"id\": \"sp8941f8f616c00be13addb2347d92a0d4\",\n      \"name\": \"CK\",\n      \"folder\": \"/Users/ckasemtantikul/PhD_local/agent_runs\",\n      \"machine\": null,\n      \"active\": true,\n      \"tabs\": [\n        {\n          \"id\": \"tb04a60a647c708b65dc99e42b66f29149\",\n          \"name\": \"1\",\n          \"active\": true,\n          \"settled\": false,\n          \"terminals\": [\n            {\n              \"terminal\": \"t5\",\n              \"pane\": \"pe0b965536be419e0b7cfbdba23749109\",\n              \"status\": null,\n              \"app\": null,\n              \"name\": null,\n              \"sub_agents\": []\n            }\n          ]\n        },\n        {\n          \"id\": \"tbf5c9e26cbdda6e5bc650762748ce9aa1\",\n          \"name\": \"2\",\n          \"active\": false,\n          \"settled\": false,\n          \"terminals\": [\n            {\n              \"terminal\": \"t1\",\n              \"pane\": \"pe569bd24a8626d18de69088c352c2a1c\",\n              \"status\": \"idle\",\n              \"app\": \"claude-code\",\n              \"name\": \"a1114-7-smoke-sonnet\",\n              \"sub_agents\": []\n            }\n          ]\n        },\n        {\n          \"id\": \"tb37b100c260640b2779d744be22aa39ee\",\n          \"name\": \"3\",\n          \"active\": false,\n          \"settled\": false,\n          \"terminals\": [\n            {\n              \"terminal\": \"t4\",\n              \"pane\": \"p2d4600e2b1512278588d861259dd8a10\",\n              \"status\": \"idle\",\n              \"app\": \"codex\",\n              \"name\": \"a1114-7-smoke-sol-fast2\",\n              \"sub_agents\": []\n            }\n          ]\n        }\n      ]\n    }\n  ],\n  \"recent\": []\n}\n$ /Users/ckasemtantikul/.local/bin/hc run --json --bg --outlive-parent --name ck-space-fake-eb74b --cwd /Users/ckasemtantikul/PhD_local/ck-herdr --label ck-herdr=true --label herdr.space=sp8941f8f616c00be13addb2347d92a0d4 -- /opt/anaconda3/bin/python3 /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-29408/fake-agent.py 'Task: read the prompt file \"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/live-space-eb74/ck-space-fake-eb74b_prompt.md\" and follow its task, scope, and output contract. Title: Fake CK space check. Do not start additional agents.'\n{\"address\":\"t7\",\"agent\":\"python3\",\"cwd\":\"/Users/ckasemtantikul/PhD_local/ck-herdr\",\"name\":\"ck-space-fake-eb74b\",\"state\":\"live\",\"turn\":0}\n$ /Users/ckasemtantikul/.local/bin/hc label --json ck-space-fake-eb74b ask= model=fake\n{\"address\":\"t7\",\"argv\":[\"/opt/anaconda3/bin/python3\",\"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-29408/fake-agent.py\",\"Task: read the prompt file \\\"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/live-space-eb74/ck-space-fake-eb74b_prompt.md\\\" and follow its task, scope, and output contract. Title: Fake CK space check. Do not start additional agents.\"],\"cols\":200,\"created_ms\":1794717294458,\"cwd\":\"/Users/ckasemtantikul/PhD_local/ck-herdr\",\"die_with_parent\":false,\"exit_code\":null,\"finished_ms\":null,\"foreground\":{\"argv\":[\"/opt/anaconda3/bin/python3\",\"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-29408/fake-agent.py\",\"Task: read the prompt file \\\"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/live-space-eb74/ck-space-fake-eb74b_prompt.md\\\" and follow its task, scope, and output contract. Title: Fake CK space check. Do not start additional agents.\"],\"cwd\":\"/Users/ckasemtantikul/PhD_local/ck-herdr\",\"name\":\"python3.12\",\"pid\":29784},\"identity\":\"ghostty\",\"keep\":false,\"labels\":{\"ck-herdr\":\"true\",\"herdr.space\":\"sp8941f8f616c00be13addb2347d92a0d4\",\"model\":\"fake\"},\"name\":\"ck-space-fake-eb74b\",\"notify\":true,\"parent\":null,\"pid\":29784,\"reason\":null,\"reported\":false,\"rm\":false,\"rows\":120,\"screen\":\"exact\",\"signal\":null,\"state\":\"live\",\"status\":null,\"status_ms\":null,\"template\":null,\"title\":\"\",\"turn\":0}\n$ /Users/ckasemtantikul/.local/bin/hc wait --json ck-space-fake-eb74b\n{\"children\":[],\"ended\":true,\"exit_code\":null,\"reason\":\"status\",\"signal\":null,\"status\":\"done\",\"terminal\":\"t7\",\"turn\":1}\nfake work\nfake done\nck-run: status=done slug=ck-space-fake-eb74b (Herdr terminal retained; attach with hc attach ck-space-fake-eb74b)\nck-run exit=0\n",
+    "cleanup": {
+      "removed": "t7"
+    }
+  }
+]

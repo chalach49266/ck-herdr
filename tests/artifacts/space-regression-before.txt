@@ -1,0 +1,3 @@
+Traceback (most recent call last):
+  File "<stdin>", line 61, in <module>
+AssertionError: ('found', ['hc', 'run', '--json', '--bg', '--outlive-parent', '--name', 'stub-found', '--cwd', '/Users/ckasemtantikul/PhD_local/ck-herdr', '--label', 'ck-herdr=true', '--', '/fake/agent', 'Task: read the prompt file "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/tmp_ol7288j/stub-found_prompt.md" and follow its task, scope, and output contract. Do not start additional agents.'])

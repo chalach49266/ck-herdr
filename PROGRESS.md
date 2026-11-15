@@ -1,27 +1,32 @@
 # Progress
 
 Done:
-- Read all required guides; no named guide was missing.
-- Built bin/ck-herdr with interactive aliases, dry-run, labels, blocking hc wait, output completion lines, and filtered listing.
-- Kept ck-dispatch and other runs read-only.
-- Passed tests/test_ck_herdr.sh on this Mac with real hc and a fake OSC agent only.
-- Verified real sol dry-run, normal fake-process exit, and removal of the test terminal.
-- Stopped private test cores. No real model was launched.
-- Wrote README with mappings, Mermaid diagram, limits, and later items.
-- Retained test proof in tests/artifacts; scratch state is ignored by git.
-
-Finalization:
-- Local commit and outbox result/summary are recorded by the final git log and assigned outbox files.
-- No further implementation work remains. No questions need chalach's decision.
+- Read required worker, bug-fix, wiki/rule, and Herdr reference guides; none missing.
+- Reproduced missing launch-time herdr.space label with fake hc/app stubs before changing the launcher.
+- Added default CK lookup, optional --space NAME, conditional space creation, launch-time label, and warning fallback.
+- Dry-run previews lookup/create/label without app/core calls or file writes.
+- Stub regressions and the existing isolated real-hc fake-agent suite pass.
+- Updated the stale dry-run assertion to match the preceding committed Codex flag fix.
+- Real app check passed with the existing fake fixture kept open using Python -i; its live terminal appeared under CK.
+- Killed and removed only this run's fake terminals. Protected terminals remain present. No app/core restart or real model launch.
+- Updated README with a short paragraph and corrected the obsolete space-mapping row.
 
 Evidence:
-- tests/artifacts/test-results.txt
-- tests/artifacts/fake-run.out
-- tests/artifacts/fake-exit.json
-- tests/artifacts/cleanup.json
-- tests/artifacts/sol-dry-run.txt
+- tests/artifacts/space-regression-before.txt (failure on old launcher)
+- tests/artifacts/space-regression-after.txt and test-results.txt (passing tests)
+- tests/artifacts/live-space-check.json, live-app-during.json, live-terminal.json, live-space-run.out (real app proof)
+- tests/artifacts/live-kill.json, live-remove.json, live-app-after.json (cleanup)
+- tests/artifacts/live-short-fixture-observations.json (earlier short-lived checks did not show tabs)
 
 Limits:
-- Verification is fake_or_tests. Real model startup and execution remain UNVERIFIED.
-- Default sandbox startup failed; safety-reviewed execution of the isolated test succeeded.
-- Ledger, budgets, andon, and reviews remain in ck-run; this launcher does not enforce them.
+- Verification: fake_or_tests plus a real-app check; real model startup/execution remains UNVERIFIED.
+- Short-lived fixture snapshots did not show a tab; the retained interactive fake did. Window import latency was not measured.
+- Socket checks ran under safety-reviewed execution. Tests stopped only their private core.
+
+Finalization:
+- Implementation and checks complete; local commit and outbox result/summary recorded at completion.
+- No questions need chalach's decision.
+
+Later (not done):
+- Existing idle-to-done mapping, Grok completion, Cursor viewer items remain deferred.
+- README still contains the older Codex invocation in its unrelated agent-command table; not changed in this space-tab task.

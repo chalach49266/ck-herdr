@@ -1,0 +1,17 @@
+{
+  "result": "PASS",
+  "fixture": [
+    "/opt/anaconda3/bin/python3",
+    "-i",
+    "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-29408/fake-agent.py"
+  ],
+  "slug": "ck-space-fake-eb74c",
+  "space_name": "CK",
+  "space_id": "sp8941f8f616c00be13addb2347d92a0d4",
+  "tab_id": "tb7f597af9b993b8b2f3dcc7631496e178",
+  "terminal": "t8",
+  "proof": "herdr-app ls shows the fake terminal as a tab under CK while hc get confirms it is live",
+  "cleanup": "PASS: hc kill then hc rm; all owned fake terminals absent from hc ls --all",
+  "protected_terminals": "Unchanged: no mutating command targeted t1, t4, or t5; all remain in CK",
+  "earlier_attempts": "Short-lived fixture snapshots did not show a tab. The same fixture with Python -i stayed live and appeared; no product retry or app/core restart was added."
+}
