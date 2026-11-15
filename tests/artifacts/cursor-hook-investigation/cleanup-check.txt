@@ -1,0 +1,4 @@
+PASS all preexisting live terminal addresses remain live
+PASS only task-created probe terminals were killed and removed
+PASS task probe names absent after cleanup
+PASS final snapshot after private-core suite still preserves preexisting live addresses

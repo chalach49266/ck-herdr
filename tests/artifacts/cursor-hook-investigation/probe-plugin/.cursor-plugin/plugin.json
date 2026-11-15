@@ -1,0 +1,4 @@
+{
+  "name": "ck-hook-probe",
+  "hooks": "hooks/hooks.json"
+}

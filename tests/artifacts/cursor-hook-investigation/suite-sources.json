@@ -1,0 +1,32 @@
+[
+  {
+    "source": "/Users/ckasemtantikul/PhD_local/ck-herdr/bin/ck-herdr",
+    "copy": "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/a1115-15/suite-copy/bin/ck-herdr",
+    "sha256": "a0821cdadc85291acf6917c1657a8a973698e9ce6a9b0c65bd341b72979a15ff",
+    "successful_copy": "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/s15/bin/ck-herdr"
+  },
+  {
+    "source": "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/test_ck_herdr.sh",
+    "copy": "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/a1115-15/suite-copy/tests/test_ck_herdr.sh",
+    "sha256": "f7e2e2ce0eb2a28f9ccc0912c7bc0278f156d3593ecb1f1962600997f3b2876f",
+    "successful_copy": "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/s15/tests/test_ck_herdr.sh"
+  },
+  {
+    "source": "/Users/ckasemtantikul/PhD_local/ck-herdr/cursor-plugin/.cursor-plugin/plugin.json",
+    "copy": "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/a1115-15/suite-copy/cursor-plugin/.cursor-plugin/plugin.json",
+    "sha256": "ad56ff2f747dfb29df7ee026b0bf644fa2a29b80bba2b9d290614e44ea727eb4",
+    "successful_copy": "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/s15/cursor-plugin/.cursor-plugin/plugin.json"
+  },
+  {
+    "source": "/Users/ckasemtantikul/PhD_local/ck-herdr/cursor-plugin/hooks/hooks.json",
+    "copy": "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/a1115-15/suite-copy/cursor-plugin/hooks/hooks.json",
+    "sha256": "8aef63dc16da2c42e30116a9bc3044ade385c28c1679469d37f5b5e35a0d9fa8",
+    "successful_copy": "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/s15/cursor-plugin/hooks/hooks.json"
+  },
+  {
+    "source": "/Users/ckasemtantikul/PhD_local/ck-herdr/cursor-plugin/hooks/status.py",
+    "copy": "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/a1115-15/suite-copy/cursor-plugin/hooks/status.py",
+    "sha256": "f2bc086131e9fbfb69533eb5971141520fa320f8f4d0f0d005fa020fc062aca0",
+    "successful_copy": "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/s15/cursor-plugin/hooks/status.py"
+  }
+]

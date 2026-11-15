@@ -129,14 +129,26 @@ completion status arrives, the launcher retains the explicit
 `status=unknown; ... read the tab` fallback and its existing unknown exit code.
 Screen text never establishes completion.
 
-**Real check limitation:** the requested read-only Grok check with the installed
-CLI returned unknown. Its reply appeared, but hc still had `reported=false` and
-`status=null`. The CLI log contains no stop or beforeSubmitPrompt execution event
-for that session. The underlying reason is **UNKNOWN**; this does not establish
-that Cursor CLI universally cannot run plugin hooks. The hook-to-tty path passes
-in the fake suite; real Grok completion through this plugin remains **UNVERIFIED**.
-See `tests/artifacts/cursor-hook-real/result.txt`, `terminal-final.json`,
-`hook-diagnostics.json`, and `screen.txt`. Only that test terminal was removed.
+**Installed CLI limitation:** the interactive Cursor code checks only user or
+project configuration before invoking `beforeSubmitPrompt` and `stop`; it omits
+plugin configuration from that check. A real local-plugin probe executed
+`sessionStart` and wrote an event file, but its prompt/stop hooks did not run.
+This rules out a general plugin-loading or trust failure for the tested session.
+The exact installed guard also rejects plugin-only fake configurations while
+accepting user/project entries. See
+[`tests/artifacts/cursor-hook-investigation/report.md`](tests/artifacts/cursor-hook-investigation/report.md)
+for installed-version provenance, real observations, source excerpts, and tests.
+
+There is a separate transport limitation: a real startup hook had
+`HC_TERMINAL_ID` but could not open `/dev/tty`. The fake fixture inherits a
+controlling terminal and does not model this. Real Grok completion remains
+**UNVERIFIED**; no production plugin or launcher change was made in this
+investigation. Prior failed evidence remains under `cursor-hook-real/`.
+
+The report includes an **unapplied** merge proposal for `~/.cursor/hooks.json`
+that activates the missing call sites. Global changes require chalach's approval.
+That proposal addresses dispatch only; the tty transport must also be repaired
+and tested before claiming done. No global settings or trust flags were changed.
 Official format references: [Cursor hooks](https://cursor.com/docs/hooks) and
 [plugin reference](https://cursor.com/docs/reference/plugins).
 
@@ -222,4 +234,6 @@ on the previous launcher. `cursor-hook-after.txt` shows passing stub checks.
 `run-cursor-hook-check.py` is the separate authorized live-check helper; the fake
 suite never calls it. The single real result is retained under `cursor-hook-real/`.
 It did not meet the requested real-done acceptance criterion. No second model
-run or global configuration workaround was attempted.
+run or global configuration workaround was attempted in that earlier task.
+The subsequent scoped investigation is documented in
+`tests/artifacts/cursor-hook-investigation/report.md`; it preserves that evidence.

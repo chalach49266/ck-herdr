@@ -1,0 +1,6 @@
+{
+  "event": "sessionStart",
+  "hc_present": true,
+  "tty_open": false,
+  "tty_error": "[Errno 6] Device not configured: '/dev/tty'"
+}

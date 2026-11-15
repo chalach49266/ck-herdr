@@ -1,0 +1,4 @@
+{
+  "name": "ck-tty-probe",
+  "hooks": "hooks/hooks.json"
+}

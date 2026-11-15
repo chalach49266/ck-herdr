@@ -1,0 +1,25 @@
+PASS per-launch plugin path for Cursor only
+PASS stub space found
+PASS stub space created
+PASS stub space no-window
+PASS stub space missing
+PASS stub space custom
+PASS stub dry-run previews space lookup/create/label with no calls or writes
+PASS regression idle-worked
+PASS regression idle-startup
+PASS regression idle-never
+PASS regression cursor
+PASS regression concurrent space lookup/create
+PASS real sol alias dry-run (both flag positions), no output file created
+PASS unsafe flag removal, interactive-only guard, done/blocked/partial/error/exit/timeout mappings
+ck-herdr: warning: Herdr window unavailable; launching without a space label
+/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/a1115-15/suite-copy/tests/.scratch/run-14603/runs/ck-test-14603.out
+ck-herdr: slug=ck-test-14603 model=fake ask=A-test
+$ /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/a1115-15/suite-copy/tests/.scratch/no-app-for-private-core ls
+ck-herdr: warning: Herdr window unavailable; launching without a space label
+$ /Users/ckasemtantikul/.local/bin/hc run --json --bg --outlive-parent --name ck-test-14603 --cwd /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/a1115-15/suite-copy --label ck-herdr=true -- /opt/anaconda3/bin/python3 /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/a1115-15/suite-copy/tests/.scratch/run-14603/fake-agent.py 'Task: read the prompt file "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/a1115-15/suite-copy/tests/.scratch/run-14603/runs/ck-test-14603_prompt.md" and follow its task, scope, and output contract. Title: OSC fake agent. Do not start additional agents.'
+{"error":{"hint":"use a shorter HC_SESSION (or socket in the config)","kind":"usage","message":"the socket path for session \"ck-herdr-test-14603\" is too long here (118 bytes; this system allows 103)"}}
+ck-herdr: error: hc returned no JSON (exit 2): {"error":{"hint":"use a shorter HC_SESSION (or socket in the config)","kind":"usage","message":"the socket path for session \"ck-herdr-test-14603\" is too long here (118 bytes; this system allows 103)"}}
+ck-run: status=error slug=ck-test-14603 (Herdr terminal retained; attach with hc attach ck-test-14603)
+ck-run exit=3
+LIVE TEST FAILED or NOT RUN: inspect hc diagnostics above; no model was launched.

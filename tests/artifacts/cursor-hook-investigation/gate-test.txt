@@ -1,0 +1,8 @@
+Source: /Users/ckasemtantikul/.local/share/cursor-agent/versions/2026.11.13-eacade1/2986.index.js:1; character offset 897188
+e.hookExecutor&&e.hooksConfig&&(e.hooksConfig.userHooks?.hooks.beforeSubmitPrompt?.length||e.hooksConfig.projectHooks?.hooks.beforeSubmitPrompt?.length)
+{"step":"beforeSubmitPrompt","plugin_only":false,"userHooks":true,"projectHooks":true}
+PASS reproduced: plugin-only rejected; user/project gate admitted
+Source: /Users/ckasemtantikul/.local/share/cursor-agent/versions/2026.11.13-eacade1/2986.index.js:1; character offset 879945
+e.hookExecutor&&e.hooksConfig&&(e.hooksConfig.userHooks?.hooks.stop?.length||e.hooksConfig.projectHooks?.hooks.stop?.length)
+{"step":"stop","plugin_only":false,"userHooks":true,"projectHooks":true}
+PASS reproduced: plugin-only rejected; user/project gate admitted

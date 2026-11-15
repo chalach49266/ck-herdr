@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeSubmitPrompt": [
+      {
+        "command": "printf '%s\\n' '{\"continue\":true}'"
+      }
+    ],
+    "stop": [
+      {
+        "command": "printf '%s\\n' '{}'"
+      }
+    ]
+  }
+}

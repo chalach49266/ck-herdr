@@ -1,0 +1,8 @@
+PASS unchanged production launcher and plugin (git diff checked separately)
+PASS fake suite completed successfully
+PASS extracted installed gate reproduction
+PASS proposed inert commands return valid JSON
+PASS proposal JSON matches report
+PASS real plugin startup file write; prompt/stop absent
+PASS real hook tty limitation retained
+PASS scoped cleanup and final live-terminal preservation

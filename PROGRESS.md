@@ -110,3 +110,39 @@ A-1115-13 finalization:
 - Final evidence consistency and cleanup checks pass (cursor-hook-final-verification.txt); git diff --check passes.
 - No implementation or live-test work remains within scope. The failed real completion criterion is reported explicitly.
 - Local commit and ordered outbox writes are the final recording steps; no push.
+
+## Active task: A-1115-15 Cursor skipped-hook investigation
+
+Done:
+- Read required worker/playbook, wiki entry/rules/open questions, prior summary, hook evidence, and hc manual. No named guide missing.
+- Confirmed clean tracked baseline; preexisting untracked research/ is preserved.
+- Captured installed agent help/version and checked official Cursor hook/plugin documentation.
+- Prior real run had no stop/prompt execution event; current plugin matches the documented Cursor manifest shape.
+
+Remaining:
+- Inspect installed local-plugin discovery and run bounded interactive file-write probes outside OneDrive.
+- State measured cause before any implementation change. Apply only a repo-local fix if supported.
+- Run fake regressions and the authorized real Grok completion check; clean up only this task's terminals.
+- Update README/evidence, commit locally, write outbox result.md then summary.md.
+
+Limits: no global configuration, trust/bypass flags, exit-code changes, ck-dispatch edits, or other live-terminal mutations.
+
+A-1115-15 investigation outcome: partial; root cause established, real done still unverified.
+Done:
+- Real plugin-only Grok probe wrote a sessionStart event and replied, but no prompt/stop hook fired.
+- Installed interactive call sites check only user/project hook arrays; plugin-only configuration fails the guard.
+- Exact extracted guard reproduced with fake inputs; user/project entries admit the call.
+- No-prompt real startup probe inherited HC_TERMINAL_ID but could not open /dev/tty. This separate transport bug is later work.
+- Unchanged full fake suite passes in an isolated source copy; initial long-socket-path failure retained separately.
+- Removed only this task's probe terminals; all preexisting live addresses remained live.
+- Added an unapplied, tested JSON-command proposal for global hook activation. No production code or global configuration changed.
+- README and evidence report explain the actual limits. Preexisting research/ and earlier evidence preserved.
+
+Evidence: tests/artifacts/cursor-hook-investigation/report.md, gate-test.txt,
+probe-events.jsonl, probe-hooks.json, tty-probe-event.json, fake-suite.txt,
+proposed-user-hooks.json, proposal-command-test.txt, cleanup-check.txt.
+
+Final consistency checks pass: evidence JSON, proposal/report agreement, fake-suite completion, unchanged production files, and final live-terminal preservation. See verification.txt in the evidence folder.
+Implementation stopped at the protected-global-change boundary. Local commit and ordered outbox result.md then summary.md are the final recording steps.
+Deferred: approved global activation, separate tty transport repair, then a1115-15-real-grok acceptance run.
+Questions for chalach: approve the exact global hook merge documented in the report? No global edit was made.

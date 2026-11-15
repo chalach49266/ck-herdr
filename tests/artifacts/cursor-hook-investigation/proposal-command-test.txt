@@ -1,0 +1,2 @@
+PASS unapplied beforeSubmitPrompt activation command returns valid JSON; no status or follow-up
+PASS unapplied stop activation command returns valid JSON; no status or follow-up

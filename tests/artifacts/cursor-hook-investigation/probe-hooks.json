@@ -1,0 +1,29 @@
+{
+  "source_log": "/var/folders/6w/qvrr65hs68x2bpxh5cdw2nrw0000gn/T/cursor-agent-logs-501/session-2026-11-15T17-01-41-022Z-13230-1.log",
+  "events": [
+    {
+      "source_line": 189,
+      "hookStep": "sessionStart",
+      "hookSource": "claude-plugin",
+      "status": "success",
+      "plugin": "probe-plugin",
+      "errorClass": null
+    },
+    {
+      "source_line": 190,
+      "hookStep": "sessionStart",
+      "hookSource": "claude-plugin",
+      "status": "success",
+      "plugin": "superpowers",
+      "errorClass": null
+    },
+    {
+      "source_line": 191,
+      "hookStep": "sessionStart",
+      "hookSource": "claude-plugin",
+      "status": "failed",
+      "plugin": "codex",
+      "errorClass": "empty_stdout"
+    }
+  ]
+}
