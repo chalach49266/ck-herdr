@@ -1,0 +1,3 @@
+Source: /var/folders/6w/qvrr65hs68x2bpxh5cdw2nrw0000gn/T/cursor-agent-logs-501/session-2026-11-15T16-26-28-672Z-5366-1.log
+No stop or beforeSubmitPrompt execution event, and no ck-herdr hook stderr marker, found in this test log.
+Underlying reason UNKNOWN; no claim that all Cursor CLI hooks are unsupported.

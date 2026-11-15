@@ -1,0 +1,63 @@
+{
+  "address": "t2g",
+  "argv": [
+    "agent",
+    "--auto-review",
+    "--sandbox",
+    "enabled",
+    "--model",
+    "grok-4.7-high",
+    "--plugin-dir",
+    "/Users/ckasemtantikul/PhD_local/ck-herdr/cursor-plugin",
+    "Task: read the prompt file \"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/artifacts/cursor-hook-real/a1115-13-real-grok_prompt.md\" and follow its task, scope, and output contract. Title: Read-only per-launch hook check. Do not start additional agents."
+  ],
+  "cols": 200,
+  "created_ms": 1794759988542,
+  "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+  "die_with_parent": false,
+  "exit_code": null,
+  "finished_ms": null,
+  "foreground": {
+    "argv": [
+      "/Users/ckasemtantikul/.local/bin/agent",
+      "--use-system-ca",
+      "/Users/ckasemtantikul/.local/share/cursor-agent/versions/2026.11.13-eacade1/index.js",
+      "--auto-review",
+      "--sandbox",
+      "enabled",
+      "--model",
+      "grok-4.7-high",
+      "--plugin-dir",
+      "/Users/ckasemtantikul/PhD_local/ck-herdr/cursor-plugin",
+      "Task: read the prompt file \"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/artifacts/cursor-hook-real/a1115-13-real-grok_prompt.md\" and follow its task, scope, and output contract. Title: Read-only per-launch hook check. Do not start additional agents."
+    ],
+    "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+    "name": "node",
+    "pid": 5366
+  },
+  "identity": "ghostty",
+  "keep": true,
+  "labels": {
+    "ask": "A-1115-13",
+    "ck-herdr": "true",
+    "herdr.space": "sp91ae4252da4b49ff4e3ea07f904e42af",
+    "model": "grok",
+    "where": "CK / 5"
+  },
+  "name": "a1115-13-real-grok",
+  "notify": true,
+  "parent": null,
+  "pid": 5366,
+  "reason": null,
+  "reported": false,
+  "rm": false,
+  "rows": 120,
+  "screen": "exact",
+  "signal": null,
+  "state": "live",
+  "status": null,
+  "status_ms": null,
+  "template": null,
+  "title": "Read Hook Check",
+  "turn": 0
+}

@@ -1,0 +1,8 @@
+/Users/ckasemtantikul/.local/share/cursor-agent/versions/2026.11.13-eacade1/2986.index.js:1
+et w,j,C=()=>{};if(jr.current&&(Dr.current=new Promise((e=>{C=e}))),e.hookExecutor&&e.hooksConfig&&(e.hooksConfig.userHooks?.hooks.beforeSubmitPrompt?.length||e.hooksConfig.projectHooks?.hooks.beforeSubmitPrompt?.length))try{if(j=await e.hookExecutor.executeHookForStep(k._.beforeSubmitPrompt,{conversation_id:O.getId(),generation_id:f,model:e.modelManager.getHookModelString(g?.modelId),prompt:t,attachments:[]}),j&&!1===j.continue){Ys(null);const e
+
+/Users/ckasemtantikul/.local/share/cursor-agent/versions/2026.11.13-eacade1/4327.index.js:1
+nMs):void 0}),new Qe.S1({response:new Qe.w5({response:{case:"afterAgentThought",value:new Ve.H}})})}case"stop":{const e=o.request.value,t=await this.hookExecutor.executeHookForStep(R._.stop,{conversation_id:e.conversationId??"",generation_id:e.generationId??"",model:e.model??"",...(0,j.U4)(e),status:st(e.status),loop_count:e.loopCount,input_tokens:void 0!==e.inputTokens?Number(e.inputTokens):void 0,output_tokens:void 0!==e.outputTokens?Number(e.o
+
+/Users/ckasemtantikul/.local/share/cursor-agent/versions/2026.11.13-eacade1/4327.index.js:1
+tionId:v,executionEnv:r}),C={};for(const[e,t]of Object.entries(E))void 0!==t&&(C[e]=t);void 0!==n&&(C.CURSOR_PLUGIN_ROOT=n,C.CLAUDE_PLUGIN_ROOT=n);const j=(0,P.q6)(),I=new S.StringDecoder("utf8"),H=new S.StringDecoder("utf8");let R,T="",$="",A=null,M=!1;for await(const e of this.shellExecutor.execute(j,g,{workingDirectory:o,signal:l.signal,sandboxPolicy:{perUser:{type:"insecure_none"}},env:C,pipeStdin:f}))switch(e.type){case"stdin_ready":f&&(awai

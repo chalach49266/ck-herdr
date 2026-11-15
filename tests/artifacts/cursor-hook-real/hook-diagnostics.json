@@ -1,0 +1,30 @@
+{
+  "source_log": "/var/folders/6w/qvrr65hs68x2bpxh5cdw2nrw0000gn/T/cursor-agent-logs-501/session-2026-11-15T16-26-28-672Z-5366-1.log",
+  "hook_execution_events": [
+    {
+      "source_line": 94,
+      "hookStep": "sessionStart",
+      "hookSource": "claude-plugin",
+      "status": "success",
+      "plugin": "superpowers"
+    },
+    {
+      "source_line": 95,
+      "hookStep": "sessionStart",
+      "hookSource": "claude-plugin",
+      "status": "failed",
+      "plugin": "codex"
+    },
+    {
+      "source_line": 215,
+      "hookStep": "postToolUse",
+      "hookSource": "claude-plugin",
+      "status": "failed",
+      "plugin": "claude-security"
+    }
+  ],
+  "stop_execution_event_present": false,
+  "beforeSubmitPrompt_execution_event_present": false,
+  "hook_stderr_marker_present": false,
+  "limitation": "Absence of a diagnostic is not proof that Cursor can never execute this hook. Underlying reason UNKNOWN."
+}

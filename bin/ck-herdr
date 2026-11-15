@@ -89,6 +89,8 @@ def agent_command(config, alias):
         safe.append("--no-daemon")
     if Path(safe[0]).name == "agy":
         safe.append("--prompt-interactive")
+    if agent == "cursor":
+        safe += ["--plugin-dir", str(Path(__file__).resolve().parents[1] / "cursor-plugin")]
     return safe, dropped
 
 
@@ -159,7 +161,7 @@ def outcome(wait):
     return 3, wait.get("reason", "error")
 
 
-def wait_for_task(argv, log, timeout):
+def wait_for_task(argv, log, timeout, cursor=False):
     """Consume hc facts, including startup idle, without reading screen text.
 
     hc wait returns immediately on startup idle. Its event subscription gives
@@ -178,6 +180,8 @@ def wait_for_task(argv, log, timeout):
                 while True:
                     remaining = deadline - time.monotonic()
                     if remaining <= 0 or not selector.select(remaining):
+                        if cursor:
+                            return 2, "unknown"
                         idle = (terminal.get("status") or {}).get("state") == "idle"
                         return (1, "partial") if idle else (3, "timeout")
                     chunk = os.read(proc.stdout.fileno(), 65536)
@@ -272,10 +276,9 @@ def launch(args):
         planned_run = run_cmd + ["--label", "herdr.space=<resolved-space-id>"] + agent_args
         for line in (planned_run, labels):
             print(shlex.join(line))
+        print(shlex.join(wait_cmd))
         if cursor:
-            print("completion: status=unknown; read the tab (ck-run exit=2); no status wait")
-        else:
-            print(shlex.join(wait_cmd))
+            print("completion: Cursor plugin hook status; unknown, read the tab if no completion arrives (ck-run exit=2)")
         print(shlex.join(read_cmd))
         print(f"out: {out} (final line: ck-run exit=<N>)")
         return 0
@@ -293,12 +296,10 @@ def launch(args):
             if first.get("sent") is False:
                 raise ValueError(f"initial task was not sent: {first}")
             invoke(labels, log)
-            if cursor:
-                code, status = 2, "unknown"
-                log.write("ck-herdr: status=unknown; Cursor CLI has no verified hc "
-                          f"completion signal; read the tab: hc attach {args.slug}\n")
-            else:
-                code, status = wait_for_task(wait_cmd, log, wait_timeout)
+            code, status = wait_for_task(wait_cmd, log, wait_timeout, cursor=cursor)
+            if cursor and status == "unknown":
+                log.write("ck-herdr: status=unknown; no Cursor completion status arrived; "
+                          f"read the tab: hc attach {args.slug}\n")
             screen = subprocess.run(read_cmd, capture_output=True, text=True, timeout=30)
             log.write(screen.stdout)
             log.write(screen.stderr)

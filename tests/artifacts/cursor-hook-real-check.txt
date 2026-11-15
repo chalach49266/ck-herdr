@@ -1,0 +1,3 @@
+launcher_exit=2
+ck-run: status=unknown slug=a1115-13-real-grok (Herdr terminal retained; attach with hc attach a1115-13-real-grok)
+ck-run exit=2

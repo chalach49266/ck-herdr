@@ -1,0 +1,5 @@
+{
+  "name": "ck-herdr-status",
+  "description": "Per-launch Herdr status from Cursor prompt and stop hooks",
+  "hooks": "hooks/hooks.json"
+}

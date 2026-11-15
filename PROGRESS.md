@@ -72,3 +72,41 @@ Finalization complete:
 - All tests and real checks have ended; no helper terminal remains.
 - Local commit records the implementation and evidence. Outbox result.md is written before summary.md.
 - No implementation work remains. Questions for chalach: none.
+
+## Active task: A-1115-13 per-launch Cursor completion hook
+
+Done:
+- Read supplied worker, bug-fix, hc, prior research, README and wiki/rule guides; none missing.
+- Confirmed installed agent --help supports --plugin-dir and official plugin docs support beforeSubmitPrompt/stop hooks.
+- Mechanism (measured prior evidence): Cursor launches return unknown immediately without an OSC status bridge.
+
+Remaining:
+- Reproduce missing plugin path in a fake regression; implement repo-local hooks and bounded status observation.
+- Run fake suite and only a1115-13-real-grok with read-only task; collect final status, then kill/remove only it.
+- Update README/evidence, commit locally, write result.md followed by summary.md.
+
+A-1115-13 outcome: partial; requested real-done criterion NOT met.
+Done:
+- Added repo-local Cursor plugin and Cursor-only --plugin-dir; no protected config changes.
+- Hook JSON stdout stays separate from OSC on /dev/tty. Missing status cannot report success.
+- Launcher now observes Cursor events until its existing deadline and retains unknown/read-the-tab fallback.
+- Missing plugin argv regression failed before and passes after; full private-core fake suite passed under safety review.
+- Single real a1115-13-real-grok produced requested read-only reply but ended status=unknown / ck-run exit=2.
+- Real hc final record: reported=false, status=null. CLI log has no stop/beforeSubmitPrompt execution event.
+- Underlying Cursor hook omission reason UNKNOWN. Do not call all CLI plugin hooks unsupported from this check.
+- Killed/removed only the fresh test terminal; before/after snapshots confirm preexisting live terminals remain.
+- Stopped implementation/model checks as requested on failure; no retry or global Cursor changes.
+Evidence:
+- tests/artifacts/cursor-hook-before.txt, cursor-hook-after.txt, cursor-hook-suite-reviewed.txt
+- tests/artifacts/fake-cursor-hook-terminal.json, fake-cursor-hook.out
+- tests/artifacts/cursor-hook-real/{result.txt,terminal-final.json,hook-diagnostics.json,screen.txt,kill.json,rm.json,terminals-before.json,terminals-after.json}
+Remaining finalization:
+- Review final diff, commit locally, write result.md then summary.md to the authorized outbox.
+Verification: fake_or_tests plus a failed real-model completion check. No real hook completion claim.
+Questions for chalach: none.
+Later (not done): investigate Cursor's missing hook event in interactive Grok mode; exit-code changes remain separate.
+
+A-1115-13 finalization:
+- Final evidence consistency and cleanup checks pass (cursor-hook-final-verification.txt); git diff --check passes.
+- No implementation or live-test work remains within scope. The failed real completion criterion is reported explicitly.
+- Local commit and ordered outbox writes are the final recording steps; no push.

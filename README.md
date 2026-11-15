@@ -77,7 +77,7 @@ The launcher constructs an interactive command for each supported agent:
 | --- | --- |
 | codex | `codex --no-daemon --sandbox workspace-write --approve-for-me -m MODEL`; verified reasoning effort from the alias file. |
 | claude | `claude --model MODEL`; verified effort when configured; normal permission handling. |
-| cursor | `agent --auto-review --sandbox enabled --model MODEL`. |
+| cursor | `agent --auto-review --sandbox enabled --model MODEL --plugin-dir /absolute/path/to/ck-herdr/cursor-plugin`. |
 | agy | `agy --prompt-interactive TASK`; default model when the alias has none. |
 
 There is no `codex exec`, print mode, shell evaluation, or permission bypass.
@@ -101,7 +101,7 @@ results, not acceptance of the agent's work or validation of its output files.
 | --- | --- |
 | `ck-run exit=0` | hc reported root `done`, or `idle` after work (hc turn advanced or an observed `working` to `idle` transition). |
 | `ck-run exit=1` | Root status `blocked`, or idle with no work during the observation window (partial). |
-| `ck-run exit=2` | Cursor completion is `unknown`; read the retained tab. It does not report a verified hc completion signal. |
+| `ck-run exit=2` | Cursor completion is `unknown` at the observation deadline; read the retained tab. No completion status arrived. |
 | `ck-run exit=3` | Error, unexpected process exit, timeout, interrupted launcher, or failed collection. |
 
 These numeric mappings are defined in `bin/ck-herdr` (`outcome` and error
@@ -117,13 +117,27 @@ unexpected process exit keep their existing meanings. A lost event stream or
 missed events fail collection. Terminal text is collected for inspection and
 is never parsed to determine completion.
 
-Cursor launches print a separate `status=unknown; ... read the tab` line and
-return the distinct unknown code immediately after launch. This says nothing
-about whether the task has finished. Installed `agent --help` has no hc status
-switch. Cursor documents JSON `stop` hooks, but configuring protected `.cursor/`
-files is outside this run's scope; a local `--plugin-dir` hook-to-OSC bridge is
-not verified here. No hook was installed and no print mode was used.
-See [Cursor hooks](https://cursor.com/docs/hooks) and
+Cursor launches load only the repository's `cursor-plugin/` through
+`--plugin-dir`. Its documented `beforeSubmitPrompt` and `stop` command hooks
+read JSON, return JSON on stdout, and write Herdr OSC status to `/dev/tty`.
+A completed stop maps to done; aborted maps to blocked; error maps to error.
+Missing or malformed stop status cannot report done. No prompt text is stored.
+No user or project `.cursor/` settings, trust flags, or bypass flags are added.
+
+Cursor uses the same bounded hc event observation as other agents. If no
+completion status arrives, the launcher retains the explicit
+`status=unknown; ... read the tab` fallback and its existing unknown exit code.
+Screen text never establishes completion.
+
+**Real check limitation:** the requested read-only Grok check with the installed
+CLI returned unknown. Its reply appeared, but hc still had `reported=false` and
+`status=null`. The CLI log contains no stop or beforeSubmitPrompt execution event
+for that session. The underlying reason is **UNKNOWN**; this does not establish
+that Cursor CLI universally cannot run plugin hooks. The hook-to-tty path passes
+in the fake suite; real Grok completion through this plugin remains **UNVERIFIED**.
+See `tests/artifacts/cursor-hook-real/result.txt`, `terminal-final.json`,
+`hook-diagnostics.json`, and `screen.txt`. Only that test terminal was removed.
+Official format references: [Cursor hooks](https://cursor.com/docs/hooks) and
 [plugin reference](https://cursor.com/docs/reference/plugins).
 
 The observation deadline defaults to the hc wait default recorded in
@@ -147,7 +161,7 @@ hc rm my-task
 ```
 
 The shell test uses the real installed `hc` and a local fake program emitting
-OSC working/done and working/idle reports. It checks no-work idle, Cursor unknown, concurrent space creation, completion, labels, listing, persistence,
+OSC working/done and working/idle reports. It checks no-work idle, Cursor unknown, Cursor-only plugin argv and actual hook commands on an hc PTY, concurrent space creation, completion, labels, listing, persistence,
 duplicate protection, bypass removal, and the real `sol` alias in dry-run only.
 It kills/removes its own terminal and stops only its private test core.
 The suite never launches a real model. Test state uses a unique `HC_SESSION` and
@@ -197,3 +211,15 @@ used the same existing CK space. Existing duplicate spaces were left alone.
 - [Herdr core](https://herdr.dev/core/): persistent terminals and the OSC status wire example used by the fake agent.
 - `tests/artifacts/hc-schema.json`: schema read from the isolated installed core.
 - Read-only CK documentation: `~/PhD_local/ck-dispatch/docs/v4.md` and a finished `.sh`/`.out` launch pair.
+
+## Per-launch Cursor hook evidence
+
+`tests/artifacts/cursor-hook-before.txt` shows the missing plugin argv regression
+on the previous launcher. `cursor-hook-after.txt` shows passing stub checks.
+`cursor-hook-suite-reviewed.txt` records the full passing isolated-core fake suite;
+`fake-cursor-hook-terminal.json` attributes its done status to `ck-cursor-hook`.
+`cursor-hook-suite.txt` retains the sandbox-denied attempt, not a test pass.
+`run-cursor-hook-check.py` is the separate authorized live-check helper; the fake
+suite never calls it. The single real result is retained under `cursor-hook-real/`.
+It did not meet the requested real-done acceptance criterion. No second model
+run or global configuration workaround was attempted.

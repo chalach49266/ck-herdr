@@ -1,0 +1,5 @@
+PASS fake suite completion evidence
+PASS real Grok final line matches unknown result
+PASS real terminal has no reported status
+PASS only owned real test terminal removed; all preexisting live terminals preserved
+PASS repository diff whitespace check performed separately

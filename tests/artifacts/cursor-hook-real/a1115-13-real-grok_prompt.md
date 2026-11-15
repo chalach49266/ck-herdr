@@ -1,0 +1,4 @@
+Tiny read-only Herdr check. Do only this:
+Run pwd and date. Read the first line of ./herdr_ref/hc_skill.md.
+Reply exactly: HERDR OK grok | <pwd output> | <first line read>
+Do not write, edit, create, or delete any file. Do not start agents. Then stop.

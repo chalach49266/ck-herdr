@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeSubmitPrompt": [
+      { "command": "python3 \"$CURSOR_PLUGIN_ROOT/hooks/status.py\" working" }
+    ],
+    "stop": [
+      { "command": "python3 \"$CURSOR_PLUGIN_ROOT/hooks/status.py\" stop" }
+    ]
+  }
+}

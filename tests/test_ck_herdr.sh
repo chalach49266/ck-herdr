@@ -4,6 +4,22 @@ set -eu
 repo=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$repo"
 # No real app/core calls in these regressions, including the dry-run cases.
+# Per-launch plugin must reach Cursor only, including fake command fixtures.
+python3 - <<'PYPLUGIN'
+import pathlib, runpy
+repo = pathlib.Path.cwd()
+m = runpy.run_path('bin/ck-herdr')
+plugin = str(repo/'cursor-plugin')
+for spec in [{'agent':'cursor','model':'grok'},
+             {'agent':'cursor','command':['/fake/cursor']}]:
+    argv, _ = m['agent_command']({'aliases':{'test':spec}}, 'test')
+    assert '--plugin-dir' in argv, argv
+    assert argv[argv.index('--plugin-dir')+1] == plugin, argv
+for spec in [{'agent':'codex'}, {'agent':'claude'}, {'command':['/fake/agent']}]:
+    argv, _ = m['agent_command']({'aliases':{'test':spec}}, 'test')
+    assert '--plugin-dir' not in argv, argv
+print('PASS per-launch plugin path for Cursor only')
+PYPLUGIN
 python3 - <<'PYTEST'
 import json, os, pathlib, subprocess, sys, tempfile
 repo = pathlib.Path.cwd()
@@ -129,8 +145,8 @@ elif a[0] == 'events':
         for typ,data in [('status',{'status':{'state':'working'}}),('status',{'status':{'state':'idle'}}),('turn',{'turn':1,'state':'idle'})]:
             emit({'method':'event','params':{'terminal':t,'type':typ,'data':data}})
     else:
-        state = 'idle' if mode.startswith('idle-') else 'done'
-        emit({'terminals':[{'address':t,'state':'live','turn':1 if mode == 'idle-worked' else 0,'status':{'state':state}}]})
+        state = 'idle' if mode.startswith('idle-') else ('done' if mode != 'cursor' else None)
+        emit({'terminals':[{'address':t,'state':'live','turn':1 if mode == 'idle-worked' else 0,'status':{'state':state} if state else None}]})
     # A never-worked agent stays alive until the launcher's bounded observation ends.
     time.sleep(5)
 ''')
@@ -188,7 +204,7 @@ slug="ck-test-$$"
 cleanup() {
     "$CK_HERDR_HC" kill --json "$slug" >/dev/null 2>&1 || :
     "$CK_HERDR_HC" rm --json "$slug" >/dev/null 2>&1 || :
-    for extra in idle never cursor; do
+    for extra in idle never cursor cursor-hook; do
         "$CK_HERDR_HC" kill --json "$slug-$extra" >/dev/null 2>&1 || :
         "$CK_HERDR_HC" rm --json "$slug-$extra" >/dev/null 2>&1 || :
     done
@@ -324,9 +340,26 @@ models=json.loads((p/'models.json').read_text())
 for mode in ['idle','never','cursor']:
     models['aliases'][mode]={'command':[shutil.which('python3'),str(p/'fake-idle.py'),mode]}
 models['aliases']['cursor']['agent']='cursor'
+# Exercise the actual plugin commands with captured JSON stdout and a real hc PTY.
+(p/'fake-cursor-hook.py').write_text(r'''import json,os,pathlib,subprocess,sys,time
+plugin=pathlib.Path(sys.argv[sys.argv.index('--plugin-dir')+1])
+config=json.loads((plugin/'hooks/hooks.json').read_text())
+env=dict(os.environ,CURSOR_PLUGIN_ROOT=str(plugin))
+for event,payload in [('beforeSubmitPrompt',{'prompt':'fake only'}),
+                      ('stop',{'status':'completed'})]:
+    for hook in config['hooks'][event]:
+        result=subprocess.run(hook['command'],shell=True,input=json.dumps(payload),
+                              capture_output=True,text=True,env=env,check=True)
+        assert json.loads(result.stdout)==({'continue':True} if event=='beforeSubmitPrompt' else {})
+        assert not result.stderr, result.stderr
+    time.sleep(.3)
+print('fake plugin hook complete',flush=True)
+time.sleep(10)
+''')
+models['aliases']['cursor-hook']={'agent':'cursor','command':[shutil.which('python3'),str(p/'fake-cursor-hook.py')]}
 (p/'models.json').write_text(json.dumps(models))
 PY
-for mode in idle never cursor; do
+for mode in idle never cursor cursor-hook; do
     printf '%s\n' 'Fake only. No model.' > "$CK_HERDR_RUNS_DIR/$slug-${mode}_prompt.md"
     set +e
     CK_HERDR_WAIT_TIMEOUT=2 bin/ck-herdr launch "$slug-$mode" --model "$mode" --cwd "$repo" > "$scratch/$mode-launch.txt" 2>&1
@@ -336,12 +369,23 @@ for mode in idle never cursor; do
         idle) expected=0 ;;
         never) expected=1 ;;
         cursor) expected=2 ;;
+        cursor-hook) expected=0 ;;
     esac
     if test "$code" -ne "$expected"; then
         cat "$CK_HERDR_RUNS_DIR/$slug-$mode.out"
         exit 1
     fi
     cp "$CK_HERDR_RUNS_DIR/$slug-$mode.out" "tests/artifacts/fake-$mode.out"
+    if test "$mode" = cursor-hook; then
+        "$CK_HERDR_HC" get --json "$slug-$mode" > tests/artifacts/fake-cursor-hook-terminal.json
+        python3 - <<'PYCHECK'
+import json
+record=json.load(open('tests/artifacts/fake-cursor-hook-terminal.json'))
+assert record['reported'] and record['status']['state']=='done'
+assert record['status']['app']=='ck-cursor-hook'
+print('PASS actual plugin commands: JSON stdout separate from working/done OSC on hc tty')
+PYCHECK
+    fi
     "$CK_HERDR_HC" kill --json "$slug-$mode" > "$scratch/$mode-kill.json"
     "$CK_HERDR_HC" rm --json "$slug-$mode" > "$scratch/$mode-rm.json"
     echo "PASS real hc fake $mode final exit=$expected"
