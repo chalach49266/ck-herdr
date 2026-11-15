@@ -35,7 +35,7 @@ def agent_command(config, alias):
             raise ValueError("alias command must be a nonempty string array")
         cmd = list(cmd)
     elif agent == "codex":
-        cmd = ["codex", "--no-daemon", "--sandbox", "workspace-write", "--approve-for-me"]
+        cmd = ["codex", "--no-daemon", "--approve-for-me"]  # --approve-for-me = workspace-write sandbox + auto review; codex refuses it with --sandbox
         if model:
             cmd += ["-m", model]
         if effort in config.get("_verified", {}).get("codex", {}).get("efforts", []):
