@@ -1,0 +1,230 @@
+#!/usr/bin/env python3
+"""Small interactive ck-run transport for herdr-core. Python stdlib only."""
+import argparse
+import json
+import os
+from pathlib import Path
+import re
+import shlex
+import shutil
+import subprocess
+import sys
+
+
+ROOT = Path.home() / "PhD_local"
+NAME = re.compile(r"[a-z0-9_-]{1,32}\Z")
+BYPASS = {
+    "--dangerously-bypass-approvals-and-sandbox",
+    "--dangerously-bypass-hook-trust", "--dangerously-skip-permissions",
+    "--allow-dangerously-skip-permissions", "--yolo", "--force", "-f",
+    "--trust", "--approve-mcps",
+}
+
+
+def agent_command(config, alias):
+    """Build an interactive argv; never copy a v1 print/exec invocation."""
+    spec = config.get("aliases", {}).get(alias)
+    if not isinstance(spec, dict):
+        raise ValueError(f"unknown model alias: {alias}")
+    agent = spec.get("agent")
+    model, effort = spec.get("model"), spec.get("effort")
+    # An argv-only command supports local fake fixtures. No shell evaluation.
+    if "command" in spec:
+        cmd = spec["command"]
+        if not isinstance(cmd, list) or not cmd or not all(isinstance(x, str) for x in cmd):
+            raise ValueError("alias command must be a nonempty string array")
+        cmd = list(cmd)
+    elif agent == "codex":
+        cmd = ["codex", "--no-daemon", "--sandbox", "workspace-write", "--approve-for-me"]
+        if model:
+            cmd += ["-m", model]
+        if effort in config.get("_verified", {}).get("codex", {}).get("efforts", []):
+            cmd += ["-c", f'model_reasoning_effort="{effort}"']
+    elif agent in ("claude", "cursor", "agy"):
+        cmd = [{"claude": "claude", "cursor": "agent", "agy": "agy"}[agent]]
+        if agent == "cursor":
+            cmd += ["--auto-review", "--sandbox", "enabled"]
+        if model:
+            cmd += ["--model", model]
+        if effort in config.get("_verified", {}).get(agent, {}).get("efforts", []):
+            cmd += ["--effort", effort]
+    else:
+        raise ValueError(f"unsupported agent: {agent!r}")
+
+    safe, dropped = [], []
+    i = 0
+    while i < len(cmd):
+        arg = cmd[i]
+        flag, _, value = arg.partition("=")
+        if flag in BYPASS or flag.startswith("--dangerously-"):
+            dropped.append(arg)
+        elif flag in ("--permission-mode", "--ask-for-approval", "-a", "--sandbox"):
+            separate = "=" not in arg
+            value = cmd[i + 1] if separate and i + 1 < len(cmd) else value
+            if value in ("bypassPermissions", "never", "danger-full-access", "disabled"):
+                dropped.append(arg + (" " + value if separate else ""))
+                i += int(separate)
+            else:
+                safe.append(arg)
+                if separate:
+                    safe.append(value)
+                    i += 1
+        elif flag in ("-c", "--config") and not (
+            i + 1 < len(cmd) and re.fullmatch(
+                r'model_reasoning_effort="(?:low|medium|high|xhigh|max)"', cmd[i + 1]
+            )
+        ):
+            raise ValueError("only model_reasoning_effort config overrides are supported")
+        elif flag in ("-p", "--print", "--prompt", "--output-format", "--input-format") or arg in ("exec", "review"):
+            raise ValueError("alias command must be interactive, with no print/exec flags")
+        else:
+            safe.append(arg)
+        i += 1
+    if not safe or safe[0].startswith("-"):
+        raise ValueError("alias has no executable")
+    if Path(safe[0]).name == "codex" and "--no-daemon" not in safe:
+        safe.append("--no-daemon")
+    if Path(safe[0]).name == "agy":
+        safe.append("--prompt-interactive")
+    return safe, dropped
+
+
+def hc_path():
+    return os.environ.get("CK_HERDR_HC") or shutil.which("hc") or str(Path.home() / ".local/bin/hc")
+
+
+def invoke(argv, log=None, timeout=30):
+    if log:
+        log.write("$ " + shlex.join(argv) + "\n")
+        log.flush()
+    proc = subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
+    if log:
+        log.write(proc.stdout)
+        log.write(proc.stderr)
+        log.flush()
+    # hc wait may return a terminal exit/blocked code with useful JSON.
+    try:
+        data = json.loads(proc.stdout)
+    except ValueError:
+        raise ValueError(f"hc returned no JSON (exit {proc.returncode}): {proc.stderr.strip()}")
+    if isinstance(data, dict) and "error" in data:
+        raise ValueError(str(data["error"]))
+    if proc.returncode and not (isinstance(data, dict) and "reason" in data and "ended" in data):
+        raise ValueError(f"hc failed (exit {proc.returncode}): {proc.stderr.strip()}")
+    return data
+
+
+def outcome(wait):
+    if wait.get("reason") == "status":
+        return {"done": (0, "done"), "blocked": (1, "blocked"),
+                "idle": (1, "partial")}.get(wait.get("status"), (3, "error"))
+    return 3, wait.get("reason", "error")
+
+
+def launch(args):
+    if not NAME.fullmatch(args.slug):
+        raise ValueError("slug must be lowercase letters, digits, '-' or '_', length 1..32 (hc names)")
+    runs = Path(os.environ.get("CK_HERDR_RUNS_DIR", str(ROOT / "agent_runs"))).expanduser().resolve()
+    models = Path(os.environ.get("CK_HERDR_MODELS", str(ROOT / "ck-dispatch/config/models.json"))).expanduser()
+    cmd, dropped = agent_command(json.loads(models.read_text()), args.model)
+    cwd = Path(args.cwd).expanduser().resolve()
+    if not cwd.is_dir():
+        raise ValueError(f"cwd is not a directory: {cwd}")
+    prompt = runs / f"{args.slug}_prompt.md"
+    out = runs / f"{args.slug}.out"
+    task = f"Task: read the prompt file {json.dumps(str(prompt))} and follow its task, scope, and output contract."
+    if args.title:
+        task += f" Title: {args.title}."
+    task += " Do not start additional agents."
+    hc = hc_path()
+    run_cmd = [hc, "run", "--json", "--bg", "--outlive-parent", "--name", args.slug,
+               "--cwd", str(cwd), "--label", "ck-herdr=true", "--", *cmd, task]
+    labels = [hc, "label", "--json", args.slug, f"ask={args.ask or ''}", f"model={args.model}"]
+    wait_cmd = [hc, "wait", "--json", args.slug]
+    read_cmd = [hc, "read", "--lines", "100", args.slug]
+    for flag in dropped:
+        print(f"ck-herdr: dropped unsafe v1 flag: {flag}", file=sys.stderr)
+    if args.dry_run:
+        print("dry run: nothing written or started")
+        for line in (run_cmd, labels, wait_cmd, read_cmd):
+            print(shlex.join(line))
+        print(f"out: {out} (final line: ck-run exit=<N>)")
+        return 0
+    if not prompt.is_file():
+        raise ValueError(f"missing prompt file: {prompt}")
+    # Refuse reused slugs atomically, including symlinks, so no prior log is overwritten.
+    with out.open("x", buffering=1) as log:
+        code, status = 3, "error"
+        log.write(f"ck-herdr: slug={args.slug} model={args.model} ask={args.ask or ''}\n")
+        for flag in dropped:
+            log.write(f"ck-herdr: dropped unsafe v1 flag: {flag}\n")
+        try:
+            started = invoke(run_cmd, log)
+            first = started.get("first_message") or {}
+            if first.get("sent") is False:
+                raise ValueError(f"initial task was not sent: {first}")
+            invoke(labels, log)
+            while True:
+                wait = invoke(wait_cmd, log, timeout=None)
+                if wait.get("reason") != "message":
+                    break  # hc wait blocks; no sleep or state polling.
+            code, status = outcome(wait)
+            screen = subprocess.run(read_cmd, capture_output=True, text=True, timeout=30)
+            log.write(screen.stdout)
+            log.write(screen.stderr)
+            if screen.returncode:
+                code, status = 3, "error (could not collect terminal output)"
+        except (OSError, ValueError, subprocess.TimeoutExpired, KeyboardInterrupt) as exc:
+            code, status = 3, "error"
+            log.write(f"ck-herdr: error: {exc}\n")
+        finally:
+            log.write(f"ck-run: status={status} slug={args.slug} (Herdr terminal retained; attach with hc attach {args.slug})\n")
+            log.write(f"ck-run exit={code}\n")
+    print(out)
+    return code
+
+
+def listing(args):
+    cmd = [hc_path(), "ls", "--json", "--label", "ck-herdr=true"]
+    if args.dry_run:
+        print(shlex.join(cmd))
+        return 0
+    data = invoke(cmd)
+    print("SLUG\tTERMINAL\tSTATE\tSTATUS\tASK\tMODEL\tCWD")
+    for terminal in data.get("terminals", []):
+        # hc ls returns compact rows; hc get carries the actual label map.
+        if "labels" not in terminal:
+            terminal = invoke([hc_path(), "get", "--json", terminal["address"]])
+        if terminal.get("labels", {}).get("ck-herdr") != "true":
+            continue
+        labels = terminal["labels"]
+        row = (terminal.get("name"), terminal.get("address"), terminal.get("state"),
+               (terminal.get("status") or {}).get("state"), labels.get("ask"),
+               labels.get("model"), terminal.get("cwd"))
+        print("\t".join(str(x or "-").replace("\n", " ").replace("\t", " ") for x in row))
+    return 0
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--dry-run", action="store_true", help="print commands; do not write or start anything")
+    commands = parser.add_subparsers(dest="command", required=True)
+    launch_parser = commands.add_parser("launch")
+    launch_parser.add_argument("slug")
+    launch_parser.add_argument("--model", required=True)
+    launch_parser.add_argument("--cwd", required=True)
+    launch_parser.add_argument("--ask")
+    launch_parser.add_argument("--title")
+    ls_parser = commands.add_parser("ls")
+    for sub in (launch_parser, ls_parser):
+        sub.add_argument("--dry-run", action="store_true", default=argparse.SUPPRESS)
+    args = parser.parse_args()
+    try:
+        return launch(args) if args.command == "launch" else listing(args)
+    except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
+        print(f"ck-herdr: {exc}", file=sys.stderr)
+        return 3
+
+
+if __name__ == "__main__":
+    sys.exit(main())

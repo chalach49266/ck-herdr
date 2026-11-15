@@ -1,0 +1,2 @@
+SLUG	TERMINAL	STATE	STATUS	ASK	MODEL	CWD
+ck-test-23010	t1	live	done	A-test	fake	/Users/ckasemtantikul/PhD_local/ck-herdr

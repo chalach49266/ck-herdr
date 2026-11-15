@@ -1,0 +1,8 @@
+PASS real sol alias dry-run (both flag positions), no output file created
+PASS unsafe flag removal, interactive-only guard, done/blocked/partial/error/exit/timeout mappings
+/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-23010/runs/ck-test-23010.out
+PASS real hc OSC working-to-done, labels, listing, persistent terminal, .out final exit=0
+PASS reused slug refuses to overwrite output
+PASS test terminal killed/removed and private core stopped
+EVIDENCE /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-23010
+ALL CHECKS PASSED (fake_or_tests; no real model launched)
