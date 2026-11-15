@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+"""Keep Cursor on hc's tty and report the initial task's file completion.
+
+No child output capture or screen parsing. The interactive child inherits the
+terminal's descriptors and foreground process group. The wrapper stays hc's
+root program until that child exits.
+"""
+import os
+from pathlib import Path
+import signal
+import subprocess
+import sys
+import time
+
+
+POLL_S = 0.5
+
+
+def signature(folder):
+    try:
+        st = (folder / "summary.md").stat()
+        if st.st_size > 0 and (folder / "result.md").is_file():
+            return st.st_size, st.st_mtime_ns
+    except OSError:
+        pass
+    return None
+
+
+def main():
+    folder = Path(sys.argv[1])
+    assert sys.argv[2] == "--"
+    command = sys.argv[3:]
+    try:
+        tty = open("/dev/tty", "wb", buffering=0)
+    except OSError:
+        print("ck-herdr: warning: Cursor wrapper cannot open tty; completion unknown; read the tab", file=sys.stderr)
+        os.execvp(command[0], command)
+
+    def report(state):
+        tty.write(f"\x1b]7501;state={state}:app=ck-summary-wrapper\x1b\\".encode())
+
+    report("working")
+    try:
+        child = subprocess.Popen(command)  # Inherit stdin/stdout/stderr and tty.
+    except OSError:
+        report("error")
+        raise
+    # Ctrl-C belongs to the interactive child, which shares our foreground group.
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    last = None
+    done = False
+    while True:
+        current = signature(folder)
+        if not done and current is not None and current == last:
+            report("done")
+            done = True
+        last = current
+        code = child.poll()
+        if code is not None:
+            if not done and current is not None:
+                # A child may write its summary immediately before exiting.
+                time.sleep(POLL_S)
+                if signature(folder) == current:
+                    report("done")
+                    done = True
+            if not done:
+                report("error")
+            tty.close()
+            if code < 0:
+                # Preserve signal termination rather than turning it into success.
+                signal.signal(-code, signal.SIG_DFL)
+                os.kill(os.getpid(), -code)
+            return code
+        time.sleep(POLL_S)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

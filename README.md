@@ -12,7 +12,10 @@ flowchart LR
     M["v1 models.json (read only)"] --> L
     L --> H["hc persistent terminal"]
     H --> A["Interactive agent"]
-    A --> S["OSC status"]
+    A --> F["Cursor: result.md, then summary.md LAST"]
+    F --> B["TTY wrapper: stable file"]
+    B --> S["OSC status"]
+    A -->|other agents| S
     S --> UI["Herdr tab"]
     S --> W["hc events + turn counter"]
     W --> O["slug.out + ck-run exit=N"]
@@ -77,7 +80,7 @@ The launcher constructs an interactive command for each supported agent:
 | --- | --- |
 | codex | `codex --no-daemon --sandbox workspace-write --approve-for-me -m MODEL`; verified reasoning effort from the alias file. |
 | claude | `claude --model MODEL`; verified effort when configured; normal permission handling. |
-| cursor | `agent --auto-review --sandbox enabled --model MODEL --plugin-dir /absolute/path/to/ck-herdr/cursor-plugin`. |
+| cursor | `python3 bin/ck-herdr-cursor RUN_FOLDER -- agent --auto-review --sandbox enabled --model MODEL TASK`; the child stays interactive on the same tty. |
 | agy | `agy --prompt-interactive TASK`; default model when the alias has none. |
 
 There is no `codex exec`, print mode, shell evaluation, or permission bypass.
@@ -101,7 +104,7 @@ results, not acceptance of the agent's work or validation of its output files.
 | --- | --- |
 | `ck-run exit=0` | hc reported root `done`, or `idle` after work (hc turn advanced or an observed `working` to `idle` transition). |
 | `ck-run exit=1` | Root status `blocked`, or idle with no work during the observation window (partial). |
-| `ck-run exit=2` | Cursor completion is `unknown` at the observation deadline; read the retained tab. No completion status arrived. |
+| `ck-run exit=2` | Cursor wrapper is unavailable and no working report arrives by the observation deadline; read the retained tab. |
 | `ck-run exit=3` | Error, unexpected process exit, timeout, interrupted launcher, or failed collection. |
 
 These numeric mappings are defined in `bin/ck-herdr` (`outcome` and error
@@ -117,45 +120,41 @@ unexpected process exit keep their existing meanings. A lost event stream or
 missed events fail collection. Terminal text is collected for inspection and
 is never parsed to determine completion.
 
-Cursor launches load only the repository's `cursor-plugin/` through
-`--plugin-dir`. Its documented `beforeSubmitPrompt` and `stop` command hooks
-read JSON, return JSON on stdout, and write Herdr OSC status to `/dev/tty`.
-A completed stop maps to done; aborted maps to blocked; error maps to error.
-Missing or malformed stop status cannot report done. No prompt text is stored.
-No user or project `.cursor/` settings, trust flags, or bypass flags are added.
+Cursor launches create a fresh `<runs-dir>/<slug>/` and append the ck-run
+output contract to the initial task: write `result.md`, then write `summary.md`
+LAST. These output writes are explicitly authorized for read-only tasks too.
+The launcher refuses an existing run folder so an old summary cannot complete
+a new task. Dry-run creates neither the folder nor output files.
 
-Cursor uses the same bounded hc event observation as other agents. If no
-completion status arrives, the launcher retains the explicit
-`status=unknown; ... read the tab` fallback and its existing unknown exit code.
-Screen text never establishes completion.
+`bin/ck-herdr-cursor` is hc's terminal program. It starts Cursor with inherited
+terminal input/output and reports root `working` through OSC on its own tty.
+It reports `done` when a nonempty summary has unchanged size and modification
+time across a poll and `result.md` exists, following ck-run's stability check.
+Its poll interval is defined by `POLL_S` in the wrapper. It reports `error` if
+the child exits without that completion signal and preserves the child's exit
+code or signal. The wrapper keeps running after done while Cursor remains
+interactive, visible, and steerable. It covers the initial launch task only.
 
-**Installed CLI limitation:** the interactive Cursor code checks only user or
-project configuration before invoking `beforeSubmitPrompt` and `stop`; it omits
-plugin configuration from that check. A real local-plugin probe executed
-`sessionStart` and wrote an event file, but its prompt/stop hooks did not run.
-This rules out a general plugin-loading or trust failure for the tested session.
-The exact installed guard also rejects plugin-only fake configurations while
-accepting user/project entries. See
-[`tests/artifacts/cursor-hook-investigation/report.md`](tests/artifacts/cursor-hook-investigation/report.md)
-for installed-version provenance, real observations, source excerpts, and tests.
+There are no Cursor hooks in normal launches. The old `cursor-plugin/` files
+and `tests/artifacts/cursor-hook-investigation/report.md` are PARKED evidence:
+plugin-only interactive hooks were skipped, and a real hook could not open its
+tty. No global or project Cursor configuration change is needed for the wrapper.
+An absent wrapper or inaccessible controlling tty retains the honest unknown
+fallback; once working is reported, failure to complete by the deadline is a
+timeout under the existing error mapping. Completion never comes from screen text.
 
-There is a separate transport limitation: a real startup hook had
-`HC_TERMINAL_ID` but could not open `/dev/tty`. The fake fixture inherits a
-controlling terminal and does not model this. Real Grok completion remains
-**UNVERIFIED**; no production plugin or launcher change was made in this
-investigation. Prior failed evidence remains under `cursor-hook-real/`.
-
-The report includes an **unapplied** merge proposal for `~/.cursor/hooks.json`
-that activates the missing call sites. Global changes require chalach's approval.
-That proposal addresses dispatch only; the tty transport must also be repaired
-and tested before claiming done. No global settings or trust flags were changed.
-Official format references: [Cursor hooks](https://cursor.com/docs/hooks) and
-[plugin reference](https://cursor.com/docs/reference/plugins).
+The wrapper's OSC root status is the same status consumed by `hc wait`, the
+Herdr desktop app, and the phone app. The installed schema defines
+`Terminal.status` as the root report and `WaitResult.status` as its exact word.
+The installed app guide explains tab/space aggregation and that a viewed done
+can display idle. Primary references: [Herdr core status](https://herdr.dev/core/)
+and [Herdr mobile status](https://herdr.dev/mobile/). The phone UI is not tested
+by this repository's local checks.
 
 The observation deadline defaults to the hc wait default recorded in
 `tests/artifacts/wait-help.txt`; tests can shorten it with
 `CK_HERDR_WAIT_TIMEOUT` (positive finite seconds). The launcher uses blocking
-event reads, with no sleeps or state polling. All terminals remain available
+event reads; only the Cursor wrapper polls its completion files. All terminals remain available
 for inspection and steering:
 
 ```sh
@@ -173,13 +172,21 @@ hc rm my-task
 ```
 
 The shell test uses the real installed `hc` and a local fake program emitting
-OSC working/done and working/idle reports. It checks no-work idle, Cursor unknown, Cursor-only plugin argv and actual hook commands on an hc PTY, concurrent space creation, completion, labels, listing, persistence,
+OSC working/done and working/idle reports. It checks no-work idle, Cursor unknown fallback, missing-summary timeout, Cursor-only wrapper argv and file completion on an hc PTY, concurrent space creation, completion, labels, listing, persistence,
 duplicate protection, bypass removal, and the real `sol` alias in dry-run only.
 It kills/removes its own terminal and stops only its private test core.
 The suite never launches a real model. Test state uses a unique `HC_SESSION` and
 repo-local XDG directories/socket, so the user's core is unaffected.
 
-`tests/artifacts/test-results.txt` records the executed check results.
+`tests/artifacts/summary-wrapper-suite-final.txt` records the final executed checks.
+`summary-wrapper-before.txt` records the failing old plugin-wiring regression.
+Current generic fake logs are versioned in `summary-wrapper-fakes/`; historical
+artifacts are retained. The wrapper PTY cases cover interactive input, changing/empty/missing summary,
+missing result, completion at child exit, child exit preservation, and no-tty fallback.
+`fake-cursor-summary-terminal.json` and `fake-cursor-summary-wait.json` prove
+root done through real hc while the fake child remains live.
+
+`tests/artifacts/test-results.txt` records earlier check results.
 `status-regression-before.txt` and `status-regression-after.txt` show the
 failing-then-passing status and space-race regressions. `fake-idle.out`,
 `fake-never.out`, and `fake-cursor.out` retain isolated real-hc fake-agent proof.
@@ -231,9 +238,25 @@ on the previous launcher. `cursor-hook-after.txt` shows passing stub checks.
 `cursor-hook-suite-reviewed.txt` records the full passing isolated-core fake suite;
 `fake-cursor-hook-terminal.json` attributes its done status to `ck-cursor-hook`.
 `cursor-hook-suite.txt` retains the sandbox-denied attempt, not a test pass.
-`run-cursor-hook-check.py` is the separate authorized live-check helper; the fake
+`run-cursor-hook-check.py` is the historical authorized live-check helper; the fake
 suite never calls it. The single real result is retained under `cursor-hook-real/`.
 It did not meet the requested real-done acceptance criterion. No second model
 run or global configuration workaround was attempted in that earlier task.
 The subsequent scoped investigation is documented in
 `tests/artifacts/cursor-hook-investigation/report.md`; it preserves that evidence.
+
+## Summary-wrapper live check
+
+`tests/artifacts/summary-wrapper-real/` holds the authorized read-only Grok
+check, its output files, hc get/wait records, and scoped cleanup evidence.
+The agent cwd is `~/PhD_local/agent_runs`; its output folder is inside this
+repository via `CK_HERDR_RUNS_DIR`. Only that output folder is writable by the
+task contract. `result.txt` records launcher success (`ck-run exit=0`) and hc
+root `done` from `ck-summary-wrapper`; `wait-final.json` independently returns
+done. Cursor remained live until scoped cleanup. The check needed specific
+interactive approval for each output write outside its cwd; no allowlist or
+trust setting was changed. `summary-write-approval.txt` retains that prompt.
+The immediate desktop snapshot in `app-final.json` still said working, despite
+the hc final records saying done. Desktop rendering of done and the phone UI
+remain UNVERIFIED; the docs/schema establish their common status source.
+Historical hook proposals remain unapplied.

@@ -1,0 +1,34 @@
+PASS normal Cursor argv omits parked plugin
+PASS wrapper PTY complete preserves child exit=0
+PASS wrapper PTY interactive preserves child exit=0
+PASS wrapper PTY changing preserves child exit=0
+PASS wrapper PTY on-exit preserves child exit=7
+PASS wrapper PTY missing preserves child exit=7
+PASS wrapper PTY empty preserves child exit=0
+PASS wrapper PTY no-result preserves child exit=0
+PASS wrapper unavailable tty falls back honestly and preserves child exit
+PASS stub space found
+PASS stub space created
+PASS stub space no-window
+PASS stub space missing
+PASS stub space custom
+PASS stub dry-run previews space lookup/create/label with no calls or writes
+PASS regression idle-worked
+PASS regression idle-startup
+PASS regression idle-never
+PASS regression cursor
+PASS regression concurrent space lookup/create
+PASS real sol alias dry-run (both flag positions), no output file created
+PASS unsafe flag removal, interactive-only guard, done/blocked/partial/error/exit/timeout mappings
+ck-herdr: warning: Herdr window unavailable; launching without a space label
+/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-27526/runs/ck-test-27526.out
+PASS real hc OSC working-to-done, labels, listing, persistent terminal, .out final exit=0
+PASS reused slug refuses to overwrite output
+PASS real hc fake idle final exit=0
+PASS real hc fake never final exit=1
+PASS real hc fake cursor final exit=3
+PASS summary-file wrapper reports real hc root done to get and wait while child stays interactive
+PASS real hc fake cursor-summary final exit=0
+PASS test terminal killed/removed and private core stopped
+EVIDENCE /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-27526
+ALL CHECKS PASSED (fake_or_tests; no real model launched)

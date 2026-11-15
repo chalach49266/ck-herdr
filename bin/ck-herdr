@@ -89,8 +89,6 @@ def agent_command(config, alias):
         safe.append("--no-daemon")
     if Path(safe[0]).name == "agy":
         safe.append("--prompt-interactive")
-    if agent == "cursor":
-        safe += ["--plugin-dir", str(Path(__file__).resolve().parents[1] / "cursor-plugin")]
     return safe, dropped
 
 
@@ -180,7 +178,7 @@ def wait_for_task(argv, log, timeout, cursor=False):
                 while True:
                     remaining = deadline - time.monotonic()
                     if remaining <= 0 or not selector.select(remaining):
-                        if cursor:
+                        if cursor and not saw_working:
                             return 2, "unknown"
                         idle = (terminal.get("status") or {}).get("state") == "idle"
                         return (1, "partial") if idle else (3, "timeout")
@@ -258,10 +256,25 @@ def launch(args):
     if args.title:
         task += f" Title: {args.title}."
     task += " Do not start additional agents."
+    run_folder = runs / args.slug
+    wrapper = Path(__file__).resolve().with_name("ck-herdr-cursor")
+    wrapped = cursor and wrapper.is_file()
+    if cursor:
+        task += (
+            " OUTPUT CONTRACT (required): LIVE RUN: ck-run cannot read your replies in this session. "
+            "It reads two files in your run folder. "
+            f"OUTBOX: {run_folder}. When you are finished: "
+            f"1. Write {run_folder}/result.md: your full answer in Markdown. "
+            f"2. Then write {run_folder}/summary.md: only the summary lines, one per line "
+            "(1 to 10 short lines). Write it LAST: ck-run takes this file as the sign that you are done. "
+            "These two output writes are authorized even for a read-only task; keep all other scope limits. "
+            "Do not write summary.md until the task and result.md are finished."
+        )
     hc = hc_path()
     run_cmd = [hc, "run", "--json", "--bg", "--outlive-parent", "--name", args.slug,
                "--cwd", str(cwd), "--label", "ck-herdr=true"]
-    agent_args = ["--", *cmd, task]
+    program = [sys.executable, str(wrapper), str(run_folder), "--"] if wrapped else []
+    agent_args = ["--", *program, *cmd, task]
     labels = [hc, "label", "--json", args.slug, f"ask={args.ask or ''}", f"model={args.model}"]
     wait_cmd = [hc, "events", "--json", "--terminal", args.slug]
     read_cmd = [hc, "read", "--lines", "100", args.slug]
@@ -278,7 +291,8 @@ def launch(args):
             print(shlex.join(line))
         print(shlex.join(wait_cmd))
         if cursor:
-            print("completion: Cursor plugin hook status; unknown, read the tab if no completion arrives (ck-run exit=2)")
+            print(f"run folder: {run_folder} (created only on live launch)")
+            print("completion: tty wrapper watches result.md then stable summary.md; unknown only if wrapper unavailable")
         print(shlex.join(read_cmd))
         print(f"out: {out} (final line: ck-run exit=<N>)")
         return 0
@@ -291,6 +305,10 @@ def launch(args):
         for flag in dropped:
             log.write(f"ck-herdr: dropped unsafe v1 flag: {flag}\n")
         try:
+            if cursor:
+                run_folder.mkdir()  # Never accept a stale summary from a reused folder.
+                if not wrapped:
+                    log.write("ck-herdr: warning: Cursor wrapper unavailable; status may be unknown; read the tab\n")
             started = invoke(run_cmd + space_label(args.space, log) + agent_args, log)
             first = started.get("first_message") or {}
             if first.get("sent") is False:

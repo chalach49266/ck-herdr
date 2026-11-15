@@ -1,0 +1,6 @@
+PASS final suite and failed-before regression evidence
+PASS real launcher exit=0; hc get/wait done from ck-summary-wrapper while child live
+PASS test terminal removed and all preexisting live addresses preserved
+PASS parked hook sources/evidence unchanged
+PASS outcome mapping, space/list functions, and non-Cursor command construction unchanged
+PASS git diff --check

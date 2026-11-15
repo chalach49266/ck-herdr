@@ -4,22 +4,81 @@ set -eu
 repo=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$repo"
 # No real app/core calls in these regressions, including the dry-run cases.
-# Per-launch plugin must reach Cursor only, including fake command fixtures.
-python3 - <<'PYPLUGIN'
-import pathlib, runpy
-repo = pathlib.Path.cwd()
+# Normal Cursor launches use the summary wrapper, never the parked plugin.
+python3 - <<'PYWRAPPER'
+import runpy
 m = runpy.run_path('bin/ck-herdr')
-plugin = str(repo/'cursor-plugin')
 for spec in [{'agent':'cursor','model':'grok'},
              {'agent':'cursor','command':['/fake/cursor']}]:
     argv, _ = m['agent_command']({'aliases':{'test':spec}}, 'test')
-    assert '--plugin-dir' in argv, argv
-    assert argv[argv.index('--plugin-dir')+1] == plugin, argv
-for spec in [{'agent':'codex'}, {'agent':'claude'}, {'command':['/fake/agent']}]:
-    argv, _ = m['agent_command']({'aliases':{'test':spec}}, 'test')
     assert '--plugin-dir' not in argv, argv
-print('PASS per-launch plugin path for Cursor only')
-PYPLUGIN
+print('PASS normal Cursor argv omits parked plugin')
+PYWRAPPER
+# A real controlling PTY, no hc or model; check stability and interactive I/O.
+python3 - <<'PYPTY'
+import errno,json,os,pathlib,pty,select,signal,sys,tempfile,time
+repo=pathlib.Path.cwd()
+(repo/'tests/.scratch').mkdir(exist_ok=True)
+with tempfile.TemporaryDirectory(dir=repo/'tests/.scratch') as tmp:
+    root=pathlib.Path(tmp)
+    def run_case(mode,code):
+        folder=root/mode;folder.mkdir()
+        fake=folder/'child.py'
+        fake.write_text(r'''import pathlib,sys,time
+folder=pathlib.Path(sys.argv[1]); mode=sys.argv[2]
+assert sys.stdin.isatty() and sys.stdout.isatty()
+print('CHILD READY',flush=True)
+if mode=='interactive':
+    assert input()=='steer child'
+    print('STEERED',flush=True)
+if mode in ('complete','interactive','on-exit'):
+    (folder/'result.md').write_text('result')
+    (folder/'summary.md').write_text('summary')
+elif mode=='changing':
+    (folder/'result.md').write_text('result')
+    for i in range(8):
+        (folder/'summary.md').write_text('changing '+str(i));time.sleep(.2)
+    print('WRITING FINISHED',flush=True)
+elif mode=='no-result': (folder/'summary.md').write_text('summary')
+elif mode=='empty':
+    (folder/'result.md').write_text('result');(folder/'summary.md').touch()
+if mode != 'on-exit': time.sleep(2)
+sys.exit(int(sys.argv[3]))
+''')
+        pid,fd=pty.fork()
+        if pid==0:
+            os.execv(sys.executable,[sys.executable,str(repo/'bin/ck-herdr-cursor'),str(folder),'--',sys.executable,str(fake),str(folder),mode,str(code)])
+        output=b'';status=None;deadline=time.monotonic()+12;steered=False
+        try:
+            while time.monotonic()<deadline:
+                if select.select([fd],[],[],.1)[0]:
+                    try: part=os.read(fd,65536)
+                    except OSError as exc:
+                        if exc.errno!=errno.EIO: raise
+                        break
+                    if not part: break
+                    output+=part
+                    if mode=='interactive' and b'CHILD READY' in output and not steered:
+                        os.write(fd,b'steer child\n');steered=True
+                who,status=os.waitpid(pid,os.WNOHANG)
+                if who: break
+            if not who: _,status=os.waitpid(pid,0)
+        finally: os.close(fd)
+        assert os.waitstatus_to_exitcode(status)==code,(mode,status,output)
+        assert b'state=working:app=ck-summary-wrapper' in output,(mode,output)
+        done=b'state=done:app=ck-summary-wrapper' in output
+        assert done==(mode in ('complete','interactive','changing','on-exit')),(mode,output)
+        if not done: assert b'state=error:app=ck-summary-wrapper' in output,(mode,output)
+        if mode=='changing': assert output.index(b'WRITING FINISHED')<output.index(b'state=done'),output
+        if mode=='interactive': assert b'STEERED' in output,output
+        print('PASS wrapper PTY '+mode+' preserves child exit='+str(code),flush=True)
+    for mode,code in [('complete',0),('interactive',0),('changing',0),('on-exit',7),('missing',7),('empty',0),('no-result',0)]:
+        run_case(mode,code)
+    # No controlling tty: fallback exec preserves the child code, no fake done.
+    result=__import__('subprocess').run([sys.executable,str(repo/'bin/ck-herdr-cursor'),str(root),'--',sys.executable,'-c','raise SystemExit(7)'],start_new_session=True,capture_output=True,text=True)
+    assert result.returncode==7 and 'completion unknown' in result.stderr and '7501' not in result.stdout
+    print('PASS wrapper unavailable tty falls back honestly and preserves child exit')
+PYPTY
 python3 - <<'PYTEST'
 import json, os, pathlib, subprocess, sys, tempfile
 repo = pathlib.Path.cwd()
@@ -187,6 +246,7 @@ assert not failures, '\n'.join(failures)
 PYREG
 if test "${CK_HERDR_STUB_ONLY:-}" = 1; then exit 0; fi
 
+mkdir -p tests/artifacts/summary-wrapper-fakes
 export CK_HERDR_HC="${CK_HERDR_HC:-$HOME/.local/bin/hc}"
 export HC_SESSION="ck-herdr-test-$$"
 export HC_SOCKET="$repo/tests/.scratch/s$$.sock"
@@ -204,7 +264,7 @@ slug="ck-test-$$"
 cleanup() {
     "$CK_HERDR_HC" kill --json "$slug" >/dev/null 2>&1 || :
     "$CK_HERDR_HC" rm --json "$slug" >/dev/null 2>&1 || :
-    for extra in idle never cursor cursor-hook; do
+    for extra in idle never cursor cursor-summary; do
         "$CK_HERDR_HC" kill --json "$slug-$extra" >/dev/null 2>&1 || :
         "$CK_HERDR_HC" rm --json "$slug-$extra" >/dev/null 2>&1 || :
     done
@@ -340,26 +400,19 @@ models=json.loads((p/'models.json').read_text())
 for mode in ['idle','never','cursor']:
     models['aliases'][mode]={'command':[shutil.which('python3'),str(p/'fake-idle.py'),mode]}
 models['aliases']['cursor']['agent']='cursor'
-# Exercise the actual plugin commands with captured JSON stdout and a real hc PTY.
-(p/'fake-cursor-hook.py').write_text(r'''import json,os,pathlib,subprocess,sys,time
-plugin=pathlib.Path(sys.argv[sys.argv.index('--plugin-dir')+1])
-config=json.loads((plugin/'hooks/hooks.json').read_text())
-env=dict(os.environ,CURSOR_PLUGIN_ROOT=str(plugin))
-for event,payload in [('beforeSubmitPrompt',{'prompt':'fake only'}),
-                      ('stop',{'status':'completed'})]:
-    for hook in config['hooks'][event]:
-        result=subprocess.run(hook['command'],shell=True,input=json.dumps(payload),
-                              capture_output=True,text=True,env=env,check=True)
-        assert json.loads(result.stdout)==({'continue':True} if event=='beforeSubmitPrompt' else {})
-        assert not result.stderr, result.stderr
-    time.sleep(.3)
-print('fake plugin hook complete',flush=True)
+# Cursor child writes files but emits no OSC: only the wrapper can report done.
+(p/'fake-cursor-summary.py').write_text(r'''import pathlib,re,sys,time
+folder=pathlib.Path(re.search(r"OUTBOX: (.*?)\. When you are finished:",sys.argv[-1]).group(1))
+print("interactive child visible",flush=True)
+time.sleep(.3)
+(folder/'result.md').write_text('Fake result only\n')
+(folder/'summary.md').write_text('Fake summary complete\n')
 time.sleep(10)
 ''')
-models['aliases']['cursor-hook']={'agent':'cursor','command':[shutil.which('python3'),str(p/'fake-cursor-hook.py')]}
+models['aliases']['cursor-summary']={'agent':'cursor','command':[shutil.which('python3'),str(p/'fake-cursor-summary.py')]}
 (p/'models.json').write_text(json.dumps(models))
 PY
-for mode in idle never cursor cursor-hook; do
+for mode in idle never cursor cursor-summary; do
     printf '%s\n' 'Fake only. No model.' > "$CK_HERDR_RUNS_DIR/$slug-${mode}_prompt.md"
     set +e
     CK_HERDR_WAIT_TIMEOUT=2 bin/ck-herdr launch "$slug-$mode" --model "$mode" --cwd "$repo" > "$scratch/$mode-launch.txt" 2>&1
@@ -368,22 +421,27 @@ for mode in idle never cursor cursor-hook; do
     case "$mode" in
         idle) expected=0 ;;
         never) expected=1 ;;
-        cursor) expected=2 ;;
-        cursor-hook) expected=0 ;;
+        cursor) expected=3 ;;
+        cursor-summary) expected=0 ;;
     esac
     if test "$code" -ne "$expected"; then
         cat "$CK_HERDR_RUNS_DIR/$slug-$mode.out"
         exit 1
     fi
-    cp "$CK_HERDR_RUNS_DIR/$slug-$mode.out" "tests/artifacts/fake-$mode.out"
-    if test "$mode" = cursor-hook; then
-        "$CK_HERDR_HC" get --json "$slug-$mode" > tests/artifacts/fake-cursor-hook-terminal.json
+    cp "$CK_HERDR_RUNS_DIR/$slug-$mode.out" "tests/artifacts/summary-wrapper-fakes/fake-$mode.out"
+    if test "$mode" = cursor-summary; then
+        "$CK_HERDR_HC" get --json "$slug-$mode" > tests/artifacts/fake-cursor-summary-terminal.json
+        "$CK_HERDR_HC" wait --json "$slug-$mode" > tests/artifacts/fake-cursor-summary-wait.json
         python3 - <<'PYCHECK'
 import json
-record=json.load(open('tests/artifacts/fake-cursor-hook-terminal.json'))
+record=json.load(open('tests/artifacts/fake-cursor-summary-terminal.json'))
 assert record['reported'] and record['status']['state']=='done'
-assert record['status']['app']=='ck-cursor-hook'
-print('PASS actual plugin commands: JSON stdout separate from working/done OSC on hc tty')
+assert record['status']['app']=='ck-summary-wrapper'
+assert record['state']=='live'
+assert any(x.endswith('/ck-herdr-cursor') for x in record['argv'])
+wait=json.load(open('tests/artifacts/fake-cursor-summary-wait.json'))
+assert wait['reason']=='status' and wait['status']=='done'
+print('PASS summary-file wrapper reports real hc root done to get and wait while child stays interactive')
 PYCHECK
     fi
     "$CK_HERDR_HC" kill --json "$slug-$mode" > "$scratch/$mode-kill.json"
@@ -393,12 +451,12 @@ done
 "$CK_HERDR_HC" server stop > "$scratch/core-stopped.txt"
 trap - EXIT HUP INT TERM
 mkdir -p tests/artifacts
-cp "$CK_HERDR_RUNS_DIR/$slug.out" tests/artifacts/fake-run.out
-cp "$scratch/terminal.json" tests/artifacts/fake-terminal.json
-cp "$scratch/fake-exit.json" tests/artifacts/fake-exit.json
-cp "$scratch/list.txt" tests/artifacts/fake-list.txt
-cp "$scratch/cleanup.json" tests/artifacts/cleanup.json
-cp "$scratch/sol-dry-run.txt" tests/artifacts/sol-dry-run.txt
+cp "$CK_HERDR_RUNS_DIR/$slug.out" tests/artifacts/summary-wrapper-fakes/fake-run.out
+cp "$scratch/terminal.json" tests/artifacts/summary-wrapper-fakes/fake-terminal.json
+cp "$scratch/fake-exit.json" tests/artifacts/summary-wrapper-fakes/fake-exit.json
+cp "$scratch/list.txt" tests/artifacts/summary-wrapper-fakes/fake-list.txt
+cp "$scratch/cleanup.json" tests/artifacts/summary-wrapper-fakes/cleanup.json
+cp "$scratch/sol-dry-run.txt" tests/artifacts/summary-wrapper-fakes/sol-dry-run.txt
 echo 'PASS test terminal killed/removed and private core stopped'
 echo "EVIDENCE $scratch"
 echo 'ALL CHECKS PASSED (fake_or_tests; no real model launched)'

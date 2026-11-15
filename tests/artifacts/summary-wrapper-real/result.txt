@@ -1,0 +1,5 @@
+launcher_exit=0
+ck-run: status=done slug=a1115-17-real-grok (Herdr terminal retained; attach with hc attach a1115-17-real-grok)
+ck-run exit=0
+hc_status=done
+hc_status_app=ck-summary-wrapper

@@ -1,0 +1,5 @@
+PASS normal Cursor argv omits parked plugin
+Traceback (most recent call last):
+  File "<stdin>", line 58, in <module>
+  File "<stdin>", line 50, in run_case
+AssertionError: ('complete', b'ck-herdr: warning: Cursor wrapper cannot open tty; completion unknown; read the tab\r\nCHILD READY\r\n')

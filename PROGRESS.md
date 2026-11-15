@@ -146,3 +146,40 @@ Final consistency checks pass: evidence JSON, proposal/report agreement, fake-su
 Implementation stopped at the protected-global-change boundary. Local commit and ordered outbox result.md then summary.md are the final recording steps.
 Deferred: approved global activation, separate tty transport repair, then a1115-15-real-grok acceptance run.
 Questions for chalach: approve the exact global hook merge documented in the report? No global edit was made.
+
+## Active task: A-1115-17 Grok summary-file status wrapper
+
+Done:
+- Read required worker/playbook, hc guide, README/progress, parked hook investigation, wiki/rules/open questions, and ck-dispatch completion loop. No named guide missing.
+- Baseline is local commit 0b18dd6; preexisting untracked research/ is preserved.
+- Mechanism (measured prior evidence): interactive Grok supplies no status to hc; plugin-only hooks are skipped and real hooks cannot open their tty. That route is PARKED.
+
+Remaining:
+- Reproduce missing summary wrapper / obsolete plugin wiring with a fake regression.
+- Add Cursor-only run-folder contract and a tty-owning wrapper; preserve other launch paths and exit mappings.
+- Run fake suite, then only a1115-17-real-grok; inspect hc status, clean up only that terminal.
+- Update README/evidence, commit locally, write result.md then summary.md in this run's authorized outbox.
+
+Implementation/testing:
+- Added a Cursor-only fresh run folder and result-then-summary contract, plus bin/ck-herdr-cursor as hc's root program. No production plugin wiring remains.
+- Wrapper inherits interactive tty I/O, emits working/done/error, checks a nonempty stable summary with result present, and preserves the child exit/signal.
+- Baseline regression failed in summary-wrapper-before.txt; full fake suite passes in summary-wrapper-suite.txt under safety-reviewed PTY/core access.
+- Sandboxed PTY attempt could not open /dev/tty; retained in summary-wrapper-stubs.txt. It is not a pass.
+- hc schema and installed app guide confirm root status consumers; official core/mobile docs explicitly support wrapper OSC and phone Inbox status. Phone UI remains UNVERIFIED.
+Remaining: single authorized real Grok check, review, local commit, ordered outbox writes.
+
+Acceptance completed:
+- Final suite passes: tests/artifacts/summary-wrapper-suite-final.txt. Generic new fake evidence is versioned under summary-wrapper-fakes/; prior artifacts were restored.
+- Single a1115-17-real-grok launch returned ck-run exit=0. hc get status=done, app=ck-summary-wrapper; hc wait independently returned done. Cursor was live until cleanup.
+- The child required individual approval for its authorized result.md and summary.md writes outside cwd; approved only those displayed writes. No allowlist, global config, trust, or bypass change.
+- Immediate app snapshot still showed working while hc's final root reports showed done; desktop done rendering and phone UI are UNVERIFIED. Acceptance requires hc status and passes.
+- Killed/removed only this test terminal; cleanup snapshots confirm every preexisting live address remains live.
+- No ck-dispatch, Claude/Codex path, parked plugin, research/, protected workspace, push, install, or send change.
+Remaining: final diff/evidence consistency check, local commit, result.md then summary.md outbox finalization.
+Questions for chalach: none.
+
+Final checks complete:
+- tests/artifacts/summary-wrapper-verification.txt confirms acceptance evidence, cleanup, unchanged parked hook work, unchanged outcome/space/list functions, and unchanged non-Cursor argv.
+- No implementation or live checks remain. Local commit and ordered outbox writes are the final recording steps; the outbox records the commit hash.
+- Verification: fake_or_tests plus the single successful real Grok/hc check. Desktop rendering of done and phone UI were not verified.
+- Questions for chalach: none.
