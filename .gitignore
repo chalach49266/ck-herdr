@@ -1,3 +1,4 @@
 .test-state/
 tests/.scratch/
 __pycache__/
+.space.lock

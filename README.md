@@ -14,7 +14,7 @@ flowchart LR
     H --> A["Interactive agent"]
     A --> S["OSC status"]
     S --> UI["Herdr tab"]
-    S --> W["hc wait"]
+    S --> W["hc events + turn counter"]
     W --> O["slug.out + ck-run exit=N"]
     O --> CK
 ```
@@ -43,12 +43,12 @@ bin/ck-herdr ls
 ```
 
 The launcher starts `hc run --bg --outlive-parent`, labels the terminal, and
-blocks in `hc wait <slug>`. Run it in a persistent supervising terminal when
+blocks on `hc events --terminal <slug>` for agents with status reports. Run it in a persistent supervising terminal when
 the completion watcher must survive closing the invoking shell. The agent
 terminal itself outlives the launcher. The title becomes part of the initial
 task; the tab name remains the slug.
 
-Launches look up the space named `CK` with `herdr-app ls` and create it in `~/PhD_local/agent_runs` when missing. Use `--space NAME` to choose another name. The resolved `herdr.space` label is passed in the initial `hc run`, so the window can show the agent as a tab. If the app or window is unavailable, the agent still launches with one warning. Dry-run only prints the planned lookup, conditional creation, and label; it makes no app or core calls.
+Launches hold a repository-local advisory file lock (`.space.lock`) around looking up the space named `CK` with `herdr-app ls` and creating it in `~/PhD_local/agent_runs` when missing. Use `--space NAME` to choose another name. The resolved `herdr.space` label is passed in the initial `hc run`, so the window can show the agent as a tab. If the app or window is unavailable, the agent still launches with one warning. Dry-run only prints the planned lookup, conditional creation, and label; it makes no app or core calls.
 
 Dry-run works before or after the subcommand, including the requested form:
 
@@ -88,9 +88,8 @@ and noninteractive invocations are refused. No unsafe flags were present in
 the real alias metadata read for this build.
 
 The supported agent command shapes were checked against installed CLI help.
-Only the fake agent has been run through Herdr by this task. Real-model
-startup, authentication, trust dialogs, and actual model execution remain
-**UNVERIFIED**. A permission dialog can require human action in the Herdr tab.
+A permission dialog can require human action in the Herdr tab.
+See the scoped live-check evidence below for the current checks.
 
 ## Results and terminal lifetime
 
@@ -100,8 +99,9 @@ results, not acceptance of the agent's work or validation of its output files.
 
 | Final line | Meaning |
 | --- | --- |
-| `ck-run exit=0` | `hc wait` observed root status `done`. |
-| `ck-run exit=1` | Root status `blocked`, or `idle` without explicit completion (partial). |
+| `ck-run exit=0` | hc reported root `done`, or `idle` after work (hc turn advanced or an observed `working` to `idle` transition). |
+| `ck-run exit=1` | Root status `blocked`, or idle with no work during the observation window (partial). |
+| `ck-run exit=2` | Cursor completion is `unknown`; read the retained tab. It does not report a verified hc completion signal. |
 | `ck-run exit=3` | Error, unexpected process exit, timeout, interrupted launcher, or failed collection. |
 
 These numeric mappings are defined in `bin/ck-herdr` (`outcome` and error
@@ -110,10 +110,27 @@ as an error even if the process exit code is zero: it does not prove a task
 reported done. A fast script must keep its final status visible long enough
 for the waiter to observe it; the test fixture deliberately does this.
 
-`hc wait` message interruptions cause another blocking wait. A timeout produces
-an error completion line under this task's contract; the terminal remains
-available. There is no sleeping or state polling in the launcher. Completed,
-blocked, and timed-out terminals are retained for inspection and steering:
+The event subscription starts with an atomic terminal snapshot and follows root
+status and turn facts. Startup idle is ignored while waiting for work; idle
+with no work stays partial at the observation deadline. Blocked/error and
+unexpected process exit keep their existing meanings. A lost event stream or
+missed events fail collection. Terminal text is collected for inspection and
+is never parsed to determine completion.
+
+Cursor launches print a separate `status=unknown; ... read the tab` line and
+return the distinct unknown code immediately after launch. This says nothing
+about whether the task has finished. Installed `agent --help` has no hc status
+switch. Cursor documents JSON `stop` hooks, but configuring protected `.cursor/`
+files is outside this run's scope; a local `--plugin-dir` hook-to-OSC bridge is
+not verified here. No hook was installed and no print mode was used.
+See [Cursor hooks](https://cursor.com/docs/hooks) and
+[plugin reference](https://cursor.com/docs/reference/plugins).
+
+The observation deadline defaults to the hc wait default recorded in
+`tests/artifacts/wait-help.txt`; tests can shorten it with
+`CK_HERDR_WAIT_TIMEOUT` (positive finite seconds). The launcher uses blocking
+event reads, with no sleeps or state polling. All terminals remain available
+for inspection and steering:
 
 ```sh
 hc attach my-task
@@ -130,13 +147,16 @@ hc rm my-task
 ```
 
 The shell test uses the real installed `hc` and a local fake program emitting
-OSC working/done reports. It checks completion, labels, listing, persistence,
+OSC working/done and working/idle reports. It checks no-work idle, Cursor unknown, concurrent space creation, completion, labels, listing, persistence,
 duplicate protection, bypass removal, and the real `sol` alias in dry-run only.
 It kills/removes its own terminal and stops only its private test core.
-It never launches a real model. Test state uses a unique `HC_SESSION` and
+The suite never launches a real model. Test state uses a unique `HC_SESSION` and
 repo-local XDG directories/socket, so the user's core is unaffected.
 
 `tests/artifacts/test-results.txt` records the executed check results.
+`status-regression-before.txt` and `status-regression-after.txt` show the
+failing-then-passing status and space-race regressions. `fake-idle.out`,
+`fake-never.out`, and `fake-cursor.out` retain isolated real-hc fake-agent proof.
 `tests/artifacts/fake-run.out`, `fake-terminal.json`, `fake-exit.json`,
 `fake-list.txt`, and `sol-dry-run.txt` retain the corresponding proof.
 The scratch directory is ignored by git. If the Mac sandbox denies sockets
@@ -147,6 +167,21 @@ Test-only environment overrides: `CK_HERDR_HC` selects the hc executable,
 `CK_HERDR_RUNS_DIR` selects a scratch prompt/output directory, and
 `CK_HERDR_MODELS` selects a fixture alias file. Normal defaults point to the
 existing installed hc, agent_runs, and read-only v1 alias configuration.
+
+## Scoped live check for A-1115-12
+
+`tests/artifacts/real-check-results.txt` records the final lines: Sonnet returned
+`status=done` / `ck-run exit=0`; Grok returned `status=unknown` /
+`ck-run exit=2`. The launches used `~/PhD_local/agent_runs` as cwd, with prompts
+and outputs under `tests/artifacts/real-runs/` to respect this run's write scope.
+`launch-timing.json` records the requested spacing. The retained screen captures
+show each requested read-only reply. Screen text did not determine either
+launcher result. Grok's final hc record still has no status report.
+
+`run-real-check.py` is the separate, explicitly authorized live-check helper;
+it is not run by the fake suite. The kill/remove records and before/after
+terminal snapshots show cleanup of only its new test terminals. Both launches
+used the same existing CK space. Existing duplicate spaces were left alone.
 
 ## Later — not built
 

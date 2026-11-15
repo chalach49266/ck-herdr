@@ -1,0 +1,13 @@
+{
+  "fake_suite": "PASS",
+  "real_launcher_exits": {
+    "a1115-12-real-sonnet": 0,
+    "a1115-12-real-grok": 2
+  },
+  "launch_gap_seconds": 8.0013267500035,
+  "shared_space": "sp91ae4252da4b49ff4e3ea07f904e42af",
+  "preexisting_live_terminals_preserved": true,
+  "only_requested_real_terminals_removed": true,
+  "verification": "fake_or_tests",
+  "cursor_completion": "unknown; read the tab"
+}

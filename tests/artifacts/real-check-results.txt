@@ -1,0 +1,6 @@
+a1115-12-real-sonnet process_exit=0
+ck-run: status=done slug=a1115-12-real-sonnet (Herdr terminal retained; attach with hc attach a1115-12-real-sonnet)
+ck-run exit=0
+a1115-12-real-grok process_exit=2
+ck-run: status=unknown slug=a1115-12-real-grok (Herdr terminal retained; attach with hc attach a1115-12-real-grok)
+ck-run exit=2

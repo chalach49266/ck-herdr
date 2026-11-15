@@ -1,0 +1,59 @@
+{
+  "address": "t2d",
+  "argv": [
+    "agent",
+    "--auto-review",
+    "--sandbox",
+    "enabled",
+    "--model",
+    "grok-4.7-high",
+    "Task: read the prompt file \"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/artifacts/real-runs/a1115-12-real-grok_prompt.md\" and follow its task, scope, and output contract. Title: Read-only Herdr check. Do not start additional agents."
+  ],
+  "cols": 200,
+  "created_ms": 1794759240849,
+  "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+  "die_with_parent": false,
+  "exit_code": null,
+  "finished_ms": null,
+  "foreground": {
+    "argv": [
+      "/Users/ckasemtantikul/.local/bin/agent",
+      "--use-system-ca",
+      "/Users/ckasemtantikul/.local/share/cursor-agent/versions/2026.11.13-eacade1/index.js",
+      "--auto-review",
+      "--sandbox",
+      "enabled",
+      "--model",
+      "grok-4.7-high",
+      "Task: read the prompt file \"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/artifacts/real-runs/a1115-12-real-grok_prompt.md\" and follow its task, scope, and output contract. Title: Read-only Herdr check. Do not start additional agents."
+    ],
+    "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+    "name": "node",
+    "pid": 248
+  },
+  "identity": "ghostty",
+  "keep": true,
+  "labels": {
+    "ask": "A-1115-12",
+    "ck-herdr": "true",
+    "herdr.space": "sp91ae4252da4b49ff4e3ea07f904e42af",
+    "model": "grok",
+    "where": "CK / 5"
+  },
+  "name": "a1115-12-real-grok",
+  "notify": true,
+  "parent": null,
+  "pid": 248,
+  "reason": null,
+  "reported": false,
+  "rm": false,
+  "rows": 120,
+  "screen": "exact",
+  "signal": null,
+  "state": "live",
+  "status": null,
+  "status_ms": null,
+  "template": null,
+  "title": "Herdr Read Check",
+  "turn": 0
+}

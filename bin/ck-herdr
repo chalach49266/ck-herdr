@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """Small interactive ck-run transport for herdr-core. Python stdlib only."""
 import argparse
+import fcntl
 import json
 import os
 from pathlib import Path
 import re
+import selectors
 import shlex
 import shutil
 import subprocess
 import sys
+import time
 
 
 ROOT = Path.home() / "PhD_local"
@@ -106,11 +109,16 @@ def space_label(name, log):
         return next((s["id"] for s in spaces if s.get("name") == name), None)
 
     try:
-        space = lookup()
-        if not space:
-            invoke([app, "do", "space.new", "--name", name,
-                    "--folder", str(ROOT / "agent_runs")], log)
+        # All launches from this installation share one advisory lock. Keep the
+        # file: unlinking a lock can let concurrent processes lock different inodes.
+        lock_path = Path(__file__).resolve().parents[1] / ".space.lock"
+        with lock_path.open("a") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
             space = lookup()
+            if not space:
+                invoke([app, "do", "space.new", "--name", name,
+                        "--folder", str(ROOT / "agent_runs")], log)
+                space = lookup()
         if not isinstance(space, str) or not space:
             raise ValueError("space has no ID")
         return ["--label", f"herdr.space={space}"]
@@ -144,9 +152,86 @@ def invoke(argv, log=None, timeout=30):
 
 def outcome(wait):
     if wait.get("reason") == "status":
+        if wait.get("status") == "idle" and wait.get("turn", 0) > 0:
+            return 0, "done"
         return {"done": (0, "done"), "blocked": (1, "blocked"),
                 "idle": (1, "partial")}.get(wait.get("status"), (3, "error"))
     return 3, wait.get("reason", "error")
+
+
+def wait_for_task(argv, log, timeout):
+    """Consume hc facts, including startup idle, without reading screen text.
+
+    hc wait returns immediately on startup idle. Its event subscription gives
+    an atomic snapshot followed by changes, so no completed turn is missed
+    between launch and subscription. turn increments when working ends.
+    """
+    log.write("$ " + shlex.join(argv) + "\n")
+    terminal = {}
+    saw_working = False
+    deadline = time.monotonic() + timeout
+    with subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
+        try:
+            with selectors.DefaultSelector() as selector:
+                selector.register(proc.stdout, selectors.EVENT_READ)
+                pending = b""
+                while True:
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0 or not selector.select(remaining):
+                        idle = (terminal.get("status") or {}).get("state") == "idle"
+                        return (1, "partial") if idle else (3, "timeout")
+                    chunk = os.read(proc.stdout.fileno(), 65536)
+                    if not chunk:
+                        raise ValueError("hc event stream closed before completion")
+                    pending += chunk
+                    while b"\n" in pending:
+                        line, pending = pending.split(b"\n", 1)
+                        log.write(line.decode("utf-8", errors="replace") + "\n")
+                        data = json.loads(line)
+                        if "error" in data:
+                            raise ValueError(str(data["error"]))
+                        if data.get("method") == "missed":
+                            raise ValueError("hc missed status events; completion is unverified")
+                        if "terminals" in data:
+                            # Initial atomic snapshot includes already completed turns.
+                            matches = data["terminals"]
+                            if len(matches) != 1:
+                                raise ValueError("hc subscription has no unique terminal")
+                            terminal = matches[0]
+                            saw_working = False
+                        elif data.get("method") == "event":
+                            event = data["params"]
+                            if event.get("terminal") != terminal.get("address"):
+                                continue
+                            kind, facts = event.get("type"), event.get("data", {})
+                            if kind == "finished":
+                                return 3, "exit"
+                            if kind == "removed":
+                                return 3, "error"
+                            if kind in ("lost", "restarted"):
+                                return 3, "error"
+                            if kind == "status":
+                                terminal["status"] = facts.get("status")
+                            elif kind == "turn":
+                                terminal["turn"] = facts["turn"]
+                        else:
+                            continue  # Heartbeats carry no completion evidence.
+                        if terminal.get("state") == "finished":
+                            return 3, "exit"
+                        state = (terminal.get("status") or {}).get("state")
+                        if state == "working":
+                            saw_working = True
+                        if state == "idle" and saw_working:
+                            return 0, "done"
+                        if state in ("done", "blocked", "error") or (
+                                state == "idle" and terminal.get("turn", 0) > 0):
+                            return outcome({"reason": "status", "status": state,
+                                            "turn": terminal.get("turn", 0)})
+        finally:
+            # Stop only our event reader; never interrupt the agent terminal.
+            if proc.poll() is None:
+                proc.terminate()
+            proc.communicate(timeout=5)
 
 
 def launch(args):
@@ -154,7 +239,12 @@ def launch(args):
         raise ValueError("slug must be lowercase letters, digits, '-' or '_', length 1..32 (hc names)")
     runs = Path(os.environ.get("CK_HERDR_RUNS_DIR", str(ROOT / "agent_runs"))).expanduser().resolve()
     models = Path(os.environ.get("CK_HERDR_MODELS", str(ROOT / "ck-dispatch/config/models.json"))).expanduser()
-    cmd, dropped = agent_command(json.loads(models.read_text()), args.model)
+    config = json.loads(models.read_text())
+    cmd, dropped = agent_command(config, args.model)
+    cursor = config["aliases"][args.model].get("agent") == "cursor"
+    wait_timeout = float(os.environ.get("CK_HERDR_WAIT_TIMEOUT", "180"))
+    if not 0 < wait_timeout < float("inf"):
+        raise ValueError("CK_HERDR_WAIT_TIMEOUT must be finite and positive")
     cwd = Path(args.cwd).expanduser().resolve()
     if not cwd.is_dir():
         raise ValueError(f"cwd is not a directory: {cwd}")
@@ -169,7 +259,7 @@ def launch(args):
                "--cwd", str(cwd), "--label", "ck-herdr=true"]
     agent_args = ["--", *cmd, task]
     labels = [hc, "label", "--json", args.slug, f"ask={args.ask or ''}", f"model={args.model}"]
-    wait_cmd = [hc, "wait", "--json", args.slug]
+    wait_cmd = [hc, "events", "--json", "--terminal", args.slug]
     read_cmd = [hc, "read", "--lines", "100", args.slug]
     for flag in dropped:
         print(f"ck-herdr: dropped unsafe v1 flag: {flag}", file=sys.stderr)
@@ -180,8 +270,13 @@ def launch(args):
                                             "--folder", str(ROOT / "agent_runs")]))
         print("if the window is unavailable: launch without the space label and warn")
         planned_run = run_cmd + ["--label", "herdr.space=<resolved-space-id>"] + agent_args
-        for line in (planned_run, labels, wait_cmd, read_cmd):
+        for line in (planned_run, labels):
             print(shlex.join(line))
+        if cursor:
+            print("completion: status=unknown; read the tab (ck-run exit=2); no status wait")
+        else:
+            print(shlex.join(wait_cmd))
+        print(shlex.join(read_cmd))
         print(f"out: {out} (final line: ck-run exit=<N>)")
         return 0
     if not prompt.is_file():
@@ -198,11 +293,12 @@ def launch(args):
             if first.get("sent") is False:
                 raise ValueError(f"initial task was not sent: {first}")
             invoke(labels, log)
-            while True:
-                wait = invoke(wait_cmd, log, timeout=None)
-                if wait.get("reason") != "message":
-                    break  # hc wait blocks; no sleep or state polling.
-            code, status = outcome(wait)
+            if cursor:
+                code, status = 2, "unknown"
+                log.write("ck-herdr: status=unknown; Cursor CLI has no verified hc "
+                          f"completion signal; read the tab: hc attach {args.slug}\n")
+            else:
+                code, status = wait_for_task(wait_cmd, log, wait_timeout)
             screen = subprocess.run(read_cmd, capture_output=True, text=True, timeout=30)
             log.write(screen.stdout)
             log.write(screen.stderr)

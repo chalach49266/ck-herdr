@@ -1,0 +1,26 @@
+PASS stub space found
+PASS stub space created
+PASS stub space no-window
+PASS stub space missing
+PASS stub space custom
+PASS stub dry-run previews space lookup/create/label with no calls or writes
+PASS regression idle-worked
+PASS regression idle-startup
+PASS regression idle-never
+PASS regression cursor
+PASS regression concurrent space lookup/create
+PASS real sol alias dry-run (both flag positions), no output file created
+PASS unsafe flag removal, interactive-only guard, done/blocked/partial/error/exit/timeout mappings
+ck-herdr: warning: Herdr window unavailable; launching without a space label
+/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-99641/runs/ck-test-99641.out
+ck-herdr: slug=ck-test-99641 model=fake ask=A-test
+$ /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/no-app-for-private-core ls
+ck-herdr: warning: Herdr window unavailable; launching without a space label
+$ /Users/ckasemtantikul/.local/bin/hc run --json --bg --outlive-parent --name ck-test-99641 --cwd /Users/ckasemtantikul/PhD_local/ck-herdr --label ck-herdr=true -- /opt/anaconda3/bin/python3 /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-99641/fake-agent.py 'Task: read the prompt file "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-99641/runs/ck-test-99641_prompt.md" and follow its task, scope, and output contract. Title: OSC fake agent. Do not start additional agents.'
+hc: launchd startup failed; starting directly (may end with the launching app): Operation not permitted (os error 1)
+{"error":{"hint":"check the core log in the state directory","kind":"unavailable","message":"core did not start within 15 s"}}
+ck-herdr: error: hc returned no JSON (exit 5): hc: launchd startup failed; starting directly (may end with the launching app): Operation not permitted (os error 1)
+{"error":{"hint":"check the core log in the state directory","kind":"unavailable","message":"core did not start within 15 s"}}
+ck-run: status=error slug=ck-test-99641 (Herdr terminal retained; attach with hc attach ck-test-99641)
+ck-run exit=3
+LIVE TEST FAILED or NOT RUN: inspect hc diagnostics above; no model was launched.

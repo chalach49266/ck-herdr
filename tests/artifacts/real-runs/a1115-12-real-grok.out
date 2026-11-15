@@ -1,0 +1,138 @@
+ck-herdr: slug=a1115-12-real-grok model=grok ask=A-1115-12
+$ /Users/ckasemtantikul/.local/bin/herdr-app ls
+{
+  "spaces": [
+    {
+      "id": "sp3d348e1068854ed962cd9b82c6374515",
+      "name": "CKrun_Herdr_version",
+      "folder": "/Users/ckasemtantikul",
+      "machine": null,
+      "active": true,
+      "tabs": [
+        {
+          "id": "tb34887f996b361f9d3a5f6b5dc338ea77",
+          "name": "1",
+          "active": true,
+          "settled": false,
+          "terminals": [
+            {
+              "terminal": "t1v",
+              "pane": "pa05b7813bef9cdc9c6e66ee1145aceb0",
+              "status": "idle",
+              "app": "claude-code",
+              "name": null,
+              "sub_agents": [
+                "t27",
+                "t28",
+                "t29"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sp91ae4252da4b49ff4e3ea07f904e42af",
+      "name": "CK",
+      "folder": "/Users/ckasemtantikul/PhD_local/agent_runs",
+      "machine": null,
+      "active": false,
+      "tabs": [
+        {
+          "id": "tbc68dd3681f5da112c2e66ed088251a6f",
+          "name": "1",
+          "active": false,
+          "settled": false,
+          "terminals": [
+            {
+              "terminal": "t26",
+              "pane": "p02276fde7a34bc7769bfd80717bf2663",
+              "status": null,
+              "app": null,
+              "name": null,
+              "sub_agents": []
+            }
+          ]
+        },
+        {
+          "id": "tb14cf4fe847c9cdcab0b0b97a2fc04743",
+          "name": "2",
+          "active": false,
+          "settled": false,
+          "terminals": [
+            {
+              "terminal": "t29",
+              "pane": "p1b258d51433468d799ca28efe3fd48ea",
+              "status": null,
+              "app": null,
+              "name": "a1115-11-herdr-grok",
+              "sub_agents": []
+            }
+          ]
+        },
+        {
+          "id": "tbbd05930d3a7041c3575cf552cb98ae2c",
+          "name": "3",
+          "active": false,
+          "settled": false,
+          "terminals": [
+            {
+              "terminal": "t28",
+              "pane": "p6d5b0921fe0a681e92ebf14fa718ecc8",
+              "status": "idle",
+              "app": "codex",
+              "name": "a1115-11-herdr-sol-fast",
+              "sub_agents": []
+            }
+          ]
+        },
+        {
+          "id": "tb17d5dcfad8b3e56c8a463e2077bf044d",
+          "name": "4",
+          "active": true,
+          "settled": false,
+          "terminals": [
+            {
+              "terminal": "t27",
+              "pane": "p11e8aa4f9adf36e1f7a489fd9d6a6a67",
+              "status": "idle",
+              "app": "claude-code",
+              "name": "a1115-11-herdr-sonnet",
+              "sub_agents": []
+            }
+          ]
+        },
+        {
+          "id": "tbebde55fc120fc28c8f49ead2adec0e81",
+          "name": "5",
+          "active": false,
+          "settled": false,
+          "terminals": [
+            {
+              "terminal": "t2c",
+              "pane": "p65dabb2ca410d64070ea00d964688436",
+              "status": "working",
+              "app": "claude-code",
+              "name": "a1115-12-real-sonnet",
+              "sub_agents": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "recent": [
+    {
+      "name": "",
+      "folder": "/Users/ckasemtantikul"
+    }
+  ]
+}
+$ /Users/ckasemtantikul/.local/bin/hc run --json --bg --outlive-parent --name a1115-12-real-grok --cwd /Users/ckasemtantikul/PhD_local/agent_runs --label ck-herdr=true --label herdr.space=sp91ae4252da4b49ff4e3ea07f904e42af -- agent --auto-review --sandbox enabled --model grok-4.7-high 'Task: read the prompt file "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/artifacts/real-runs/a1115-12-real-grok_prompt.md" and follow its task, scope, and output contract. Title: Read-only Herdr check. Do not start additional agents.'
+{"address":"t2d","agent":"agent","cwd":"/Users/ckasemtantikul/PhD_local/agent_runs","name":"a1115-12-real-grok","state":"live","turn":0}
+$ /Users/ckasemtantikul/.local/bin/hc label --json a1115-12-real-grok ask=A-1115-12 model=grok
+{"address":"t2d","argv":["agent","--auto-review","--sandbox","enabled","--model","grok-4.7-high","Task: read the prompt file \"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/artifacts/real-runs/a1115-12-real-grok_prompt.md\" and follow its task, scope, and output contract. Title: Read-only Herdr check. Do not start additional agents."],"cols":200,"created_ms":1794759240849,"cwd":"/Users/ckasemtantikul/PhD_local/agent_runs","die_with_parent":false,"exit_code":null,"finished_ms":null,"identity":"ghostty","keep":false,"labels":{"ask":"A-1115-12","ck-herdr":"true","herdr.space":"sp91ae4252da4b49ff4e3ea07f904e42af","model":"grok"},"name":"a1115-12-real-grok","notify":true,"parent":null,"pid":248,"reason":null,"reported":false,"rm":false,"rows":120,"screen":"exact","signal":null,"state":"live","status":null,"status_ms":null,"template":null,"title":"","turn":0}
+ck-herdr: status=unknown; Cursor CLI has no verified hc completion signal; read the tab: hc attach a1115-12-real-grok
+
+ck-run: status=unknown slug=a1115-12-real-grok (Herdr terminal retained; attach with hc attach a1115-12-real-grok)
+ck-run exit=2

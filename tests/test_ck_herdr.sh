@@ -34,8 +34,8 @@ if app:
     else:
         sys.exit(2)
 else:
-    if a[0] == 'wait':
-        print(json.dumps({'reason': 'status', 'status': 'done'}))
+    if a[0] == 'events':
+        print(json.dumps({'terminals':[{'address':'fake', 'state':'live', 'turn':1, 'status':{'state':'done'}}]}))
     elif a[0] == 'read':
         print('fake done')
     else:
@@ -89,6 +89,86 @@ else:
         assert 'herdr.space=' in result.stdout and 'space.new' in result.stdout and ' ls' in result.stdout
     print('PASS stub dry-run previews space lookup/create/label with no calls or writes')
 PYTEST
+# Regressions for A-1115-12. Each case exercises the launcher, never model text.
+python3 - <<'PYREG'
+import json, os, pathlib, subprocess, sys, tempfile
+repo = pathlib.Path.cwd()
+failures = []
+with tempfile.TemporaryDirectory(dir=repo/'tests/.scratch') as tmp:
+    root = pathlib.Path(tmp)
+    stub = root/'stub'
+    stub.write_text('#!' + sys.executable + '\n' + r'''import json, os, pathlib, sys, time
+p = pathlib.Path(os.environ['STUB_ROOT']); a = sys.argv[1:]
+mode = os.environ['STATUS_CASE']
+if pathlib.Path(sys.argv[0]).name == 'herdr-app':
+    if a == ['ls']:
+        exists = (p/'space').exists()
+        if mode == 'race' and not exists:
+            time.sleep(.25) # Deliberately widen the lookup/create race.
+        print(json.dumps({'spaces': [{'name':'CK','id':'space-shared'}] if exists else []}))
+    else:
+        with (p/'creates').open('a') as f: f.write('create\n')
+        (p/'space').touch(); print('{}')
+elif a[0] == 'run':
+    with (p/'runs').open('a') as f: f.write(json.dumps(a)+'\n')
+    print(json.dumps({'address':a[a.index('--name')+1], 'turn':0}))
+elif a[0] == 'label':
+    print('{}')
+elif a[0] == 'read':
+    print('done success finished 100%') # Must NEVER be parsed for status.
+elif a[0] == 'wait':
+    if mode == 'cursor':
+        print(json.dumps({'reason':'timeout','ended':False,'status':None,'turn':0}))
+    else:
+        print(json.dumps({'reason':'status','ended':True,'status':'idle','turn':1 if mode == 'idle-worked' else 0}))
+elif a[0] == 'events':
+    t = a[a.index('--terminal')+1]
+    def emit(v): print(json.dumps(v),flush=True)
+    if mode == 'idle-startup':
+        emit({'terminals':[{'address':t,'state':'live','turn':0,'status':{'state':'idle'}}]})
+        for typ,data in [('status',{'status':{'state':'working'}}),('status',{'status':{'state':'idle'}}),('turn',{'turn':1,'state':'idle'})]:
+            emit({'method':'event','params':{'terminal':t,'type':typ,'data':data}})
+    else:
+        state = 'idle' if mode.startswith('idle-') else 'done'
+        emit({'terminals':[{'address':t,'state':'live','turn':1 if mode == 'idle-worked' else 0,'status':{'state':state}}]})
+    # A never-worked agent stays alive until the launcher's bounded observation ends.
+    time.sleep(5)
+''')
+    stub.chmod(0o755)
+    for name in ['hc','herdr-app']: (root/name).symlink_to(stub)
+    models = root/'models.json'
+    models.write_text(json.dumps({'aliases':{
+        'fake':{'command':['/fake/agent']},
+        'cursor-fake':{'agent':'cursor','command':['/fake/cursor']}}}))
+    env = dict(os.environ,CK_HERDR_HC=str(root/'hc'),CK_HERDR_APP=str(root/'herdr-app'),
+               CK_HERDR_MODELS=str(models),CK_HERDR_RUNS_DIR=str(root),STUB_ROOT=str(root),
+               CK_HERDR_WAIT_TIMEOUT='0.15')
+    for mode,expected,word in [('idle-worked',0,'done'),('idle-startup',0,'done'),
+                               ('idle-never',1,'partial'),('cursor',2,'unknown')]:
+        slug='status-'+mode; (root/(slug+'_prompt.md')).write_text('fake only')
+        result=subprocess.run(['bin/ck-herdr','launch',slug,'--model',
+            'cursor-fake' if mode == 'cursor' else 'fake','--cwd',str(repo)],
+            env=dict(env,STATUS_CASE=mode),capture_output=True,text=True,timeout=10)
+        out=(root/(slug+'.out')).read_text()
+        ok=result.returncode == expected and 'status='+word in out
+        if mode == 'cursor': ok=ok and 'read the tab' in out and '"reason": "timeout"' not in out
+        print(('PASS' if ok else 'FAIL')+' regression '+mode,flush=True)
+        if not ok: failures.append(mode+': '+out[-350:])
+    (root/'space').unlink(missing_ok=True);(root/'creates').unlink(missing_ok=True)
+    (root/'runs').unlink(missing_ok=True)
+    procs=[]
+    for slug in ['race-a','race-b']:
+        (root/(slug+'_prompt.md')).write_text('fake only')
+        procs.append(subprocess.Popen(['bin/ck-herdr','launch',slug,'--model','fake','--cwd',str(repo)],
+            env=dict(env,STATUS_CASE='race'),stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True))
+    results=[p.communicate(timeout=10) for p in procs]
+    creates=(root/'creates').read_text().splitlines()
+    runs=[json.loads(x) for x in (root/'runs').read_text().splitlines()]
+    ok=all(p.returncode == 0 for p in procs) and len(creates)==1 and len(runs)==2 and all('herdr.space=space-shared' in r for r in runs)
+    print(('PASS' if ok else 'FAIL')+' regression concurrent space lookup/create',flush=True)
+    if not ok: failures.append('space creates='+str(len(creates))+'; codes='+str([p.returncode for p in procs]))
+assert not failures, '\n'.join(failures)
+PYREG
 if test "${CK_HERDR_STUB_ONLY:-}" = 1; then exit 0; fi
 
 export CK_HERDR_HC="${CK_HERDR_HC:-$HOME/.local/bin/hc}"
@@ -108,6 +188,10 @@ slug="ck-test-$$"
 cleanup() {
     "$CK_HERDR_HC" kill --json "$slug" >/dev/null 2>&1 || :
     "$CK_HERDR_HC" rm --json "$slug" >/dev/null 2>&1 || :
+    for extra in idle never cursor; do
+        "$CK_HERDR_HC" kill --json "$slug-$extra" >/dev/null 2>&1 || :
+        "$CK_HERDR_HC" rm --json "$slug-$extra" >/dev/null 2>&1 || :
+    done
     # This is this test's private core, never the user's session.
     "$CK_HERDR_HC" server stop >/dev/null 2>&1 || :
 }
@@ -116,7 +200,7 @@ trap cleanup EXIT HUP INT TERM
 # Dry-run reads the real alias file and performs no hc calls or writes.
 bin/ck-herdr launch --dry-run "$slug" --model sol --cwd "$repo" --ask A-test --title 'Fake fixture only' > "$scratch/sol-dry-run.txt"
 grep -q 'codex --no-daemon --approve-for-me -m gpt-6.1-sol' "$scratch/sol-dry-run.txt"
-grep -q 'wait --json' "$scratch/sol-dry-run.txt"
+grep -q 'events --json --terminal' "$scratch/sol-dry-run.txt"
 test ! -e "$CK_HERDR_RUNS_DIR/$slug.out"
 bin/ck-herdr --dry-run launch "$slug" --model sol --cwd "$repo" > "$scratch/global-dry-run.txt"
 echo 'PASS real sol alias dry-run (both flag positions), no output file created'
@@ -132,6 +216,7 @@ argv, dropped = m['agent_command']({'aliases': {'fake': {'command': [
 assert argv == ['/fake/agent'] and len(dropped) == 5
 for state, code in [('done', 0), ('blocked', 1), ('idle', 1), ('error', 3)]:
     assert m['outcome']({'reason': 'status', 'status': state})[0] == code
+assert m['outcome']({'reason': 'status', 'status': 'idle', 'turn': 1}) == (0, 'done')
 for reason in ['exit', 'timeout', 'not_started']:
     assert m['outcome']({'reason': reason, 'exit_code': 0})[0] == 3
 for bad in [['/fake/agent', '--print'], ['/fake/agent', 'exec'],
@@ -179,7 +264,7 @@ if test "$code" -ne 0; then
     exit "$code"
 fi
 test "$(tail -n 1 "$CK_HERDR_RUNS_DIR/$slug.out")" = 'ck-run exit=0'
-grep -q '"status":"done"' "$CK_HERDR_RUNS_DIR/$slug.out"
+grep -q '"state":"done"' "$CK_HERDR_RUNS_DIR/$slug.out"
 "$CK_HERDR_HC" get --json "$slug" > "$scratch/terminal.json"
 "$CK_HERDR_HC" ls --json --label ck-herdr=true > "$scratch/hc-list.json"
 bin/ck-herdr ls > "$scratch/list.txt"
@@ -220,6 +305,47 @@ python3 - "$scratch/cleanup.json" "$slug" <<'PY'
 import json, sys
 assert all(t.get('name') != sys.argv[2] for t in json.load(open(sys.argv[1]))['terminals'])
 PY
+# Real hc fake agents cover startup idle, completed idle, no work, and no OSC.
+python3 - "$scratch" <<'PY'
+import json, pathlib, shutil, sys
+p=pathlib.Path(sys.argv[1])
+(p/'fake-idle.py').write_text(r'''import sys,time
+mode=sys.argv[1]
+def report(s):
+    print("\x1b]7501;state="+s+":app=ck-fake\x1b\\",flush=True)
+if mode != "cursor": report("idle")
+time.sleep(.3)
+if mode == "idle":
+    report("working"); time.sleep(.3); report("idle")
+print("done success finished",flush=True) # Text cannot make no-work idle complete.
+time.sleep(10)
+''')
+models=json.loads((p/'models.json').read_text())
+for mode in ['idle','never','cursor']:
+    models['aliases'][mode]={'command':[shutil.which('python3'),str(p/'fake-idle.py'),mode]}
+models['aliases']['cursor']['agent']='cursor'
+(p/'models.json').write_text(json.dumps(models))
+PY
+for mode in idle never cursor; do
+    printf '%s\n' 'Fake only. No model.' > "$CK_HERDR_RUNS_DIR/$slug-${mode}_prompt.md"
+    set +e
+    CK_HERDR_WAIT_TIMEOUT=2 bin/ck-herdr launch "$slug-$mode" --model "$mode" --cwd "$repo" > "$scratch/$mode-launch.txt" 2>&1
+    code=$?
+    set -e
+    case "$mode" in
+        idle) expected=0 ;;
+        never) expected=1 ;;
+        cursor) expected=2 ;;
+    esac
+    if test "$code" -ne "$expected"; then
+        cat "$CK_HERDR_RUNS_DIR/$slug-$mode.out"
+        exit 1
+    fi
+    cp "$CK_HERDR_RUNS_DIR/$slug-$mode.out" "tests/artifacts/fake-$mode.out"
+    "$CK_HERDR_HC" kill --json "$slug-$mode" > "$scratch/$mode-kill.json"
+    "$CK_HERDR_HC" rm --json "$slug-$mode" > "$scratch/$mode-rm.json"
+    echo "PASS real hc fake $mode final exit=$expected"
+done
 "$CK_HERDR_HC" server stop > "$scratch/core-stopped.txt"
 trap - EXIT HUP INT TERM
 mkdir -p tests/artifacts

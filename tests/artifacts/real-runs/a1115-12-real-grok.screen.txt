@@ -1,0 +1,31 @@
+
+
+  Cursor Agent
+  v2026.11.13-eacade1
+  Tip: Use /config to customize Cursor settings and behavior.
+
+
+  Task: read the prompt file "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/artifacts/real-runs/a1115-12-real-grok_prompt.md" and follow its task, scope, and output contract. Title: Read-only
+  Herdr check. Do not start additional agents.
+
+
+  I'll read the prompt file and follow its task, scope, and output contract without starting additional agents.
+
+    Read /Users/ckasemtantikul/PhD_local/ck-herdr/tests/artifacts/real-runs/a1115-12-real-grok_prompt.md
+
+  The prompt is a read-only check: run pwd and date, then read the first line of ./herdr_ref/hc_skill.md.
+
+  $ pwd && date && head -n 1 ./herdr_ref/hc_skill.md 1.5s
+    … 1 output lines hidden · ctrl+o to expand
+    Sun Nov 15 10:14:26 CST 2026
+    # hc manual (herdr-core)
+
+  HERDR OK grok | /Users/ckasemtantikul/PhD_local/agent_runs | # hc manual (herdr-core)
+
+
+ ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+  → Add a follow-up
+ ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  Grok 4.7 256K High · 8%                                                                                                                                                                  Auto-review
+  ~/PhD_local/agent_runs · commit-changes
+[hc] incomplete: older output may be missing

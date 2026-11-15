@@ -1,0 +1,444 @@
+{
+  "hidden_finished": 0,
+  "terminals": [
+    {
+      "address": "t1",
+      "agent": "claude",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs/herdr_smoke",
+      "name": "a1114-7-smoke-sonnet",
+      "reason": "killed",
+      "signal": 9,
+      "state": "finished",
+      "turn": 1,
+      "where": "CK / 1"
+    },
+    {
+      "address": "t2",
+      "agent": "agent",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs/herdr_smoke",
+      "name": "a1114-7-smoke-grok",
+      "reason": "killed",
+      "signal": 1,
+      "state": "finished",
+      "turn": 0
+    },
+    {
+      "address": "t4",
+      "agent": "codex",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs/herdr_smoke",
+      "name": "a1114-7-smoke-sol-fast2",
+      "reason": "killed",
+      "signal": 1,
+      "state": "finished",
+      "turn": 1,
+      "where": "CK / 1"
+    },
+    {
+      "address": "t5",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "CK / 1"
+    },
+    {
+      "address": "t9",
+      "agent": "claude",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs/herdr_smoke2",
+      "name": "a1114-9-smoke-sonnet",
+      "reason": "killed",
+      "signal": 9,
+      "state": "finished",
+      "turn": 0,
+      "where": "CK / 2"
+    },
+    {
+      "address": "t10",
+      "agent": "codex",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs/herdr_smoke2",
+      "name": "a1114-9-smoke-sol-fast",
+      "reason": "killed",
+      "signal": 1,
+      "state": "finished",
+      "turn": 1,
+      "where": "CK / 4"
+    },
+    {
+      "address": "t11",
+      "agent": "agent",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs/herdr_smoke2",
+      "name": "a1114-9-smoke-grok",
+      "reason": "killed",
+      "signal": 1,
+      "state": "finished",
+      "turn": 0,
+      "where": "CK / 3"
+    },
+    {
+      "address": "t12",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "CK / 1"
+    },
+    {
+      "address": "t13",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "CK / 1"
+    },
+    {
+      "address": "t14",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "CK / 1"
+    },
+    {
+      "address": "t17",
+      "agent": "agent",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs/herdr_smoke2",
+      "name": "a1114-9b-smoke-grok",
+      "reason": "killed",
+      "signal": 1,
+      "state": "finished",
+      "turn": 0,
+      "where": "CK / 4"
+    },
+    {
+      "address": "t18",
+      "agent": "agent",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs/herdr_smoke2",
+      "name": "a1114-9c-smoke-grok",
+      "reason": "killed",
+      "signal": 1,
+      "state": "finished",
+      "turn": 0,
+      "where": "CK / 2"
+    },
+    {
+      "address": "t1b",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs/herdr_smoke3",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "CK / 3 agents"
+    },
+    {
+      "address": "t1c",
+      "agent": "claude",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs/herdr_smoke3",
+      "name": "a1114-10-vis-sonnet",
+      "reason": "killed",
+      "signal": 9,
+      "state": "finished",
+      "turn": 1,
+      "where": "CK / 3 agents"
+    },
+    {
+      "address": "t1d",
+      "agent": "codex",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs/herdr_smoke3",
+      "name": "a1114-10-vis-sol-fast",
+      "reason": "killed",
+      "signal": 1,
+      "state": "finished",
+      "turn": 1,
+      "where": "CK / 3 agents"
+    },
+    {
+      "address": "t1f",
+      "agent": "agent",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs/herdr_smoke3",
+      "name": "a1114-10-vis-grok",
+      "reason": "killed",
+      "signal": 1,
+      "state": "finished",
+      "turn": 0,
+      "where": "CK / 3 agents"
+    },
+    {
+      "address": "t1g",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "~ / 1"
+    },
+    {
+      "address": "t1h",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "~ / Cursor"
+    },
+    {
+      "address": "t1j",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "~ / Antigravity"
+    },
+    {
+      "address": "t1k",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "~ / Codex"
+    },
+    {
+      "address": "t1m",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "~ / Claude Code"
+    },
+    {
+      "address": "t1n",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "~ / Pi"
+    },
+    {
+      "address": "t1p",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "~ / 1"
+    },
+    {
+      "address": "t1q",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "~ / 1"
+    },
+    {
+      "address": "t1r",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "~ / 1"
+    },
+    {
+      "address": "t1s",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "~ / 1"
+    },
+    {
+      "address": "t1t",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "~ / 1"
+    },
+    {
+      "address": "t1v",
+      "agent": "claude-code",
+      "cwd": "/Users/ckasemtantikul",
+      "state": "live",
+      "status": "done",
+      "turn": 16,
+      "where": "CKrun_Herdr_version / 1"
+    },
+    {
+      "address": "t1w",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "~ / 1"
+    },
+    {
+      "address": "t1x",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 2,
+      "where": "~ / 1"
+    },
+    {
+      "address": "t1y",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "~ / 1"
+    },
+    {
+      "address": "t1z",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "~ / 1"
+    },
+    {
+      "address": "t20",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 1,
+      "where": "~ / 1"
+    },
+    {
+      "address": "t21",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 1,
+      "where": "CKrun_Herdr_version / Claude Code"
+    },
+    {
+      "address": "t22",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "CKrun_Herdr_version / Claude Code"
+    },
+    {
+      "address": "t23",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "CKrun_Herdr_version / 2"
+    },
+    {
+      "address": "t24",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "CKrun_Herdr_version / 2"
+    },
+    {
+      "address": "t25",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Documents/PhD/Device Fabrication",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "CKrun_Herdr_version / 3"
+    },
+    {
+      "address": "t26",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+      "state": "live",
+      "turn": 0,
+      "where": "CK / 1"
+    },
+    {
+      "address": "t27",
+      "agent": "claude-code",
+      "cwd": "/Users/ckasemtantikul/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Documents/PhD/NV Compact Magnetometer",
+      "name": "a1115-11-herdr-sonnet",
+      "parent": "t1v",
+      "state": "live",
+      "status": "done",
+      "turn": 1,
+      "where": "CK / 4"
+    },
+    {
+      "address": "t28",
+      "agent": "codex",
+      "cwd": "/Users/ckasemtantikul/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Documents/PhD/NV Compact Magnetometer",
+      "name": "a1115-11-herdr-sol-fast",
+      "parent": "t1v",
+      "state": "live",
+      "status": "done",
+      "turn": 1,
+      "where": "CK / 3"
+    },
+    {
+      "address": "t29",
+      "agent": "agent",
+      "cwd": "/Users/ckasemtantikul/Library/CloudStorage/OneDrive-WashingtonUniversityinSt.Louis/Documents/PhD/NV Compact Magnetometer",
+      "name": "a1115-11-herdr-grok",
+      "parent": "t1v",
+      "state": "live",
+      "turn": 0,
+      "where": "CK / 2"
+    },
+    {
+      "address": "t2b",
+      "agent": "zsh",
+      "cwd": "/Users/ckasemtantikul",
+      "exit_code": 1,
+      "reason": "killed",
+      "state": "finished",
+      "turn": 0,
+      "where": "CKrun_Herdr_version / 2"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "address": "t2c",
+  "argv": [
+    "claude",
+    "--model",
+    "sonnet",
+    "--effort",
+    "medium",
+    "Task: read the prompt file \"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/artifacts/real-runs/a1115-12-real-sonnet_prompt.md\" and follow its task, scope, and output contract. Title: Read-only Herdr check. Do not start additional agents."
+  ],
+  "cols": 200,
+  "created_ms": 1794759232847,
+  "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+  "die_with_parent": false,
+  "exit_code": null,
+  "finished_ms": null,
+  "foreground": {
+    "argv": [
+      "claude",
+      "--model",
+      "sonnet",
+      "--effort",
+      "medium",
+      "Task: read the prompt file \"/Users/ckasemtantikul/PhD_local/ck-herdr/tests/artifacts/real-runs/a1115-12-real-sonnet_prompt.md\" and follow its task, scope, and output contract. Title: Read-only Herdr check. Do not start additional agents."
+    ],
+    "cwd": "/Users/ckasemtantikul/PhD_local/agent_runs",
+    "name": "2.1.325",
+    "pid": 99816
+  },
+  "identity": "ghostty",
+  "keep": true,
+  "labels": {
+    "ask": "A-1115-12",
+    "ck-herdr": "true",
+    "herdr.space": "sp91ae4252da4b49ff4e3ea07f904e42af",
+    "model": "sonnet",
+    "where": "CK / 6"
+  },
+  "name": "a1115-12-real-sonnet",
+  "notify": true,
+  "parent": null,
+  "pid": 99816,
+  "reason": null,
+  "reported": true,
+  "rm": false,
+  "rows": 120,
+  "screen": "exact",
+  "signal": null,
+  "state": "live",
+  "status": {
+    "app": "claude-code",
+    "msg": "read-only Herdr check passed; sonnet, agent_runs, hc manual",
+    "state": "done"
+  },
+  "status_ms": 1794759242457,
+  "template": null,
+  "title": "Herdr prompt file a1115-12-real-sonnet",
+  "turn": 1
+}

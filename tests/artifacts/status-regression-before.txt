@@ -1,0 +1,38 @@
+PASS stub space found
+PASS stub space created
+PASS stub space no-window
+PASS stub space missing
+PASS stub space custom
+PASS stub dry-run previews space lookup/create/label with no calls or writes
+FAIL regression idle-worked
+FAIL regression idle-startup
+PASS regression idle-never
+FAIL regression cursor
+FAIL regression concurrent space lookup/create
+Traceback (most recent call last):
+  File "<stdin>", line 77, in <module>
+AssertionError: idle-worked: orked ask= model=fake
+{}
+$ /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/tmp_tzhyo35/hc wait --json status-idle-worked
+{"reason": "status", "ended": true, "status": "idle", "turn": 1}
+done success finished 100%
+ck-run: status=partial slug=status-idle-worked (Herdr terminal retained; attach with hc attach status-idle-worked)
+ck-run exit=1
+
+idle-startup: up ask= model=fake
+{}
+$ /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/tmp_tzhyo35/hc wait --json status-idle-startup
+{"reason": "status", "ended": true, "status": "idle", "turn": 0}
+done success finished 100%
+ck-run: status=partial slug=status-idle-startup (Herdr terminal retained; attach with hc attach status-idle-startup)
+ck-run exit=1
+
+cursor: status-cursor ask= model=cursor-fake
+{}
+$ /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/tmp_tzhyo35/hc wait --json status-cursor
+{"reason": "timeout", "ended": false, "status": null, "turn": 0}
+done success finished 100%
+ck-run: status=timeout slug=status-cursor (Herdr terminal retained; attach with hc attach status-cursor)
+ck-run exit=3
+
+space creates=2; codes=[1, 1]

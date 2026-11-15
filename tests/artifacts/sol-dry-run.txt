@@ -2,8 +2,8 @@ dry run: nothing written or started
 space lookup: /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/no-app-for-private-core ls (name='CK')
 if missing: /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/no-app-for-private-core do space.new --name CK --folder /Users/ckasemtantikul/PhD_local/agent_runs
 if the window is unavailable: launch without the space label and warn
-/Users/ckasemtantikul/.local/bin/hc run --json --bg --outlive-parent --name ck-test-29408 --cwd /Users/ckasemtantikul/PhD_local/ck-herdr --label ck-herdr=true --label 'herdr.space=<resolved-space-id>' -- codex --no-daemon --approve-for-me -m gpt-6.1-sol -c 'model_reasoning_effort="high"' 'Task: read the prompt file "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-29408/runs/ck-test-29408_prompt.md" and follow its task, scope, and output contract. Title: Fake fixture only. Do not start additional agents.'
-/Users/ckasemtantikul/.local/bin/hc label --json ck-test-29408 ask=A-test model=sol
-/Users/ckasemtantikul/.local/bin/hc wait --json ck-test-29408
-/Users/ckasemtantikul/.local/bin/hc read --lines 100 ck-test-29408
-out: /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-29408/runs/ck-test-29408.out (final line: ck-run exit=<N>)
+/Users/ckasemtantikul/.local/bin/hc run --json --bg --outlive-parent --name ck-test-1252 --cwd /Users/ckasemtantikul/PhD_local/ck-herdr --label ck-herdr=true --label 'herdr.space=<resolved-space-id>' -- codex --no-daemon --approve-for-me -m gpt-6.1-sol -c 'model_reasoning_effort="high"' 'Task: read the prompt file "/Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-1252/runs/ck-test-1252_prompt.md" and follow its task, scope, and output contract. Title: Fake fixture only. Do not start additional agents.'
+/Users/ckasemtantikul/.local/bin/hc label --json ck-test-1252 ask=A-test model=sol
+/Users/ckasemtantikul/.local/bin/hc events --json --terminal ck-test-1252
+/Users/ckasemtantikul/.local/bin/hc read --lines 100 ck-test-1252
+out: /Users/ckasemtantikul/PhD_local/ck-herdr/tests/.scratch/run-1252/runs/ck-test-1252.out (final line: ck-run exit=<N>)
