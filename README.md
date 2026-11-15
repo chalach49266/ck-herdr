@@ -260,3 +260,19 @@ The immediate desktop snapshot in `app-final.json` still said working, despite
 the hc final records saying done. Desktop rendering of done and the phone UI
 remain UNVERIFIED; the docs/schema establish their common status source.
 Historical hook proposals remain unapplied.
+
+## Panes beside the main agent, status circles (A-1115-21, 2026-11-15)
+
+Inside Herdr (`HC_TERMINAL_ID` set) the default is `--place beside`: each agent
+gets a pane in the launching agent's tab. The launcher waits until Herdr shows
+the new terminal, then rewrites only that tab's split tree in the core document
+`herdr-app` (`hc connect` `doc.set`, version-checked, retried on conflict):
+main agent on the left half, every agent of that main (label `ck.main=<main>`)
+stacked in the right half, all equal weights. Other panes in the tab stay under
+main. `--place tab` keeps the old CK-space tab. Outside Herdr the default is `tab`.
+
+At the end the launcher sets `ck.state=done|needs|failed` (exit 0, 1-2, 3).
+The cloned Herdr mods `ck-tabs` and `ck-pane` (layout `ck-main`, in
+`~/.config/herdr-app`) draw one circle per agent: green done, yellow needs you,
+red failed, a spinner while working. Live hc status wins over the label.
+Back to Herdr's own look: `herdr-app do layout.switch '{"name":"main"}'`.

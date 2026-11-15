@@ -3,6 +3,9 @@
 set -eu
 repo=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$repo"
+# The launching agent's Herdr terminal must not leak in: --place beside would touch the real window.
+unset HC_TERMINAL_ID
+python3 tests/test_beside.py
 # No real app/core calls in these regressions, including the dry-run cases.
 # Normal Cursor launches use the summary wrapper, never the parked plugin.
 python3 - <<'PYWRAPPER'

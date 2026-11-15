@@ -129,6 +129,96 @@ def space_label(name, log):
         return []
 
 
+def home_pane(main, log):
+    """The Herdr space/tab/pane that shows terminal `main` (the agent that launches), or None."""
+    try:
+        for space in invoke([app_path(), "ls"], log)["spaces"]:
+            for tab in space.get("tabs", []):
+                for term in tab.get("terminals", []):
+                    if term.get("terminal") == main:
+                        return space["id"], tab["id"], term.get("pane")
+    except (OSError, ValueError, KeyError, TypeError, subprocess.TimeoutExpired):
+        pass
+    return None
+
+
+def doc_rpc(method, params):
+    """One JSON-RPC call to herdr-core (hc connect). The app keeps its splits in the doc 'herdr-app'."""
+    req = json.dumps({"jsonrpc": "2.0", "id": 1, "method": method, "params": params}) + "\n"
+    proc = subprocess.run([hc_path(), "connect", "--json"], input=req, capture_output=True, text=True, timeout=15)
+    for line in proc.stdout.splitlines():
+        try:
+            data = json.loads(line)
+        except ValueError:
+            continue
+        if data.get("id") == 1:
+            if "error" in data:
+                raise ValueError(f"{method}: {data['error']}")
+            return data["result"]
+    raise ValueError(f"{method}: no reply from hc connect (exit {proc.returncode})")
+
+
+def _leaves(node):
+    if node.get("type") == "block" and isinstance(node.get("content"), dict) and node["content"].get("terminal"):
+        yield node
+    for child in node.get("children", []):
+        yield from _leaves(child)
+
+
+def _node_id():
+    return "s" + os.urandom(16).hex()
+
+
+def beside_tree(root, main, agents):
+    """The tab's new split tree: main on the left half, the agents stacked in the right half, equal sizes.
+    Other panes in the tab stay, under main in the left half. None when main is not in the tab."""
+    leaves = list(_leaves(root))
+    main_leaf = next((leaf for leaf in leaves if leaf["content"]["terminal"] == main), None)
+    right = [leaf for leaf in leaves if leaf["content"]["terminal"] in agents]
+    if main_leaf is None or not right:
+        return None
+    others = [leaf for leaf in leaves if leaf is not main_leaf and leaf not in right]
+    one = {"weight": 1.0}
+    left = dict(main_leaf, size=one)
+    if others:
+        left = {"type": "column", "id": _node_id(), "size": one,
+                "children": [dict(leaf, size=one) for leaf in [main_leaf, *others]]}
+    column = {"type": "column", "id": _node_id(), "size": one,
+              "children": [dict(leaf, size=one) for leaf in right]}
+    return {"type": "row", "id": root["id"], "children": [left, column]}
+
+
+def arrange_beside(tab_id, main, new, log, timeout=20.0):
+    """Wait until Herdr shows terminal `new` in tab `tab_id`, then lay the tab out: main left half, every
+    ck-herdr agent of this main (label ck.main=<main>) in the right half, equal heights. The doc write is
+    version-checked (a conflict re-reads and retries). Returns True when the layout was written."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        doc = doc_rpc("doc.get", {"name": "herdr-app"})
+        value = doc.get("value") or {}
+        tab = next((t for s in value.get("spaces", []) for t in s.get("tabs", []) if t.get("id") == tab_id), None)
+        if tab is None:
+            raise ValueError(f"tab {tab_id} not found in the Herdr doc")
+        if new not in {leaf["content"]["terminal"] for leaf in _leaves(tab["root"])}:
+            time.sleep(0.4)  # the app has not adopted the new terminal yet
+            continue
+        listed = invoke([hc_path(), "ls", "--json", "--label", f"ck.main={main}"])
+        agents = {t["address"] for t in listed.get("terminals", [])} | {new}
+        tree = beside_tree(tab["root"], main, agents)
+        if tree is None:
+            return False
+        tab["root"] = tree
+        try:
+            doc_rpc("doc.set", {"name": "herdr-app", "value": value, "version": doc["version"]})
+        except ValueError as exc:
+            if "conflict" in str(exc):
+                continue  # somebody else changed the layout: read again
+            raise
+        log.write(f"ck-herdr: layout: {main} left half, {len(agents)} agent pane(s) right half, equal sizes\n")
+        return True
+    raise ValueError(f"Herdr did not show terminal {new} in the main tab within {timeout:.0f} s")
+
+
 def invoke(argv, log=None, timeout=30):
     if log:
         log.write("$ " + shlex.join(argv) + "\n")
@@ -271,8 +361,14 @@ def launch(args):
             "Do not write summary.md until the task and result.md are finished."
         )
     hc = hc_path()
+    main = os.environ.get("HC_TERMINAL_ID", "")
+    place = args.place or ("beside" if main else "tab")
+    if place == "beside" and not main:
+        raise ValueError("--place beside needs HC_TERMINAL_ID (run it from an agent inside Herdr)")
     run_cmd = [hc, "run", "--json", "--bg", "--outlive-parent", "--name", args.slug,
                "--cwd", str(cwd), "--label", "ck-herdr=true"]
+    if place == "beside":
+        run_cmd += ["--label", f"ck.main={main}"]
     program = [sys.executable, str(wrapper), str(run_folder), "--"] if wrapped else []
     agent_args = ["--", *program, *cmd, task]
     labels = [hc, "label", "--json", args.slug, f"ask={args.ask or ''}", f"model={args.model}"]
@@ -286,7 +382,13 @@ def launch(args):
         print("if missing: " + shlex.join([app_path(), "do", "space.new", "--name", args.space,
                                             "--folder", str(ROOT / "agent_runs")]))
         print("if the window is unavailable: launch without the space label and warn")
-        planned_run = run_cmd + ["--label", "herdr.space=<resolved-space-id>"] + agent_args
+        if place == "beside":
+            print(f"place: beside the main agent {main}: its Herdr tab; main left half, agents stacked "
+                  "in the right half with equal sizes (version-checked write of the 'herdr-app' doc)")
+            planned_run = run_cmd + ["--label", "herdr.space=<main's space>", "--label", "herdr.tab=<main's tab>"]
+        else:
+            planned_run = run_cmd + ["--label", "herdr.space=<resolved-space-id>"]
+        planned_run += agent_args
         for line in (planned_run, labels):
             print(shlex.join(line))
         print(shlex.join(wait_cmd))
@@ -309,7 +411,23 @@ def launch(args):
                 run_folder.mkdir()  # Never accept a stale summary from a reused folder.
                 if not wrapped:
                     log.write("ck-herdr: warning: Cursor wrapper unavailable; status may be unknown; read the tab\n")
-            started = invoke(run_cmd + space_label(args.space, log) + agent_args, log)
+            home = home_pane(main, log) if place == "beside" else None
+            if place == "beside" and home is None:
+                log.write(f"ck-herdr: warning: main agent {main} is not in a Herdr tab; using a tab in space "
+                          f"{args.space}\n")
+            if home:
+                # One launch at a time places and arranges, so parallel launches all land in the right column.
+                lock_path = Path(__file__).resolve().parents[1] / ".space.lock"
+                with lock_path.open("a") as lock:
+                    fcntl.flock(lock, fcntl.LOCK_EX)
+                    started = invoke(run_cmd + ["--label", f"herdr.space={home[0]}", "--label",
+                                                f"herdr.tab={home[1]}"] + agent_args, log)
+                    try:
+                        arrange_beside(home[1], main, started.get("address") or args.slug, log)
+                    except (OSError, ValueError, KeyError, TypeError, subprocess.TimeoutExpired) as exc:
+                        log.write(f"ck-herdr: warning: could not arrange the panes ({exc}); the agent runs anyway\n")
+            else:
+                started = invoke(run_cmd + space_label(args.space, log) + agent_args, log)
             first = started.get("first_message") or {}
             if first.get("sent") is False:
                 raise ValueError(f"initial task was not sent: {first}")
@@ -327,6 +445,15 @@ def launch(args):
             code, status = 3, "error"
             log.write(f"ck-herdr: error: {exc}\n")
         finally:
+            # The Herdr tab/pane circle (ck-tabs, ck-pane mods): green done, yellow needs you, red failed.
+            # A label stays after chalach looks (Herdr's own "done" turns "idle" then).
+            state = {0: "done", 1: "needs", 2: "needs"}.get(code, "failed")
+            try:
+                subprocess.run([hc_path(), "label", "--json", args.slug, f"ck.state={state}"],
+                               capture_output=True, text=True, timeout=15)
+                log.write(f"ck-herdr: ck.state={state}\n")
+            except (OSError, subprocess.TimeoutExpired):
+                pass
             log.write(f"ck-run: status={status} slug={args.slug} (Herdr terminal retained; attach with hc attach {args.slug})\n")
             log.write(f"ck-run exit={code}\n")
     print(out)
@@ -364,7 +491,11 @@ def main():
     launch_parser.add_argument("--cwd", required=True)
     launch_parser.add_argument("--ask")
     launch_parser.add_argument("--title")
-    launch_parser.add_argument("--space", default="CK", help="Herdr space name (default: CK)")
+    launch_parser.add_argument("--space", default="CK", help="Herdr space name for --place tab (default: CK)")
+    launch_parser.add_argument("--place", choices=("beside", "tab"),
+                               help="beside: a pane in the launching agent's tab (main left half, agents right "
+                                    "half, equal sizes); tab: a new tab in --space. Default: beside inside Herdr "
+                                    "(HC_TERMINAL_ID set), else tab")
     ls_parser = commands.add_parser("ls")
     for sub in (launch_parser, ls_parser):
         sub.add_argument("--dry-run", action="store_true", default=argparse.SUPPRESS)
